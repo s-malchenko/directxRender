@@ -1,4 +1,5 @@
-#include <Windows.h>
+#include "EasyWin.h"
+#include <sstream>
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -7,6 +8,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_CLOSE:
 		PostQuitMessage(0);
 		break;
+	case WM_LBUTTONDOWN:
+		const POINTS pt = MAKEPOINTS(lParam);
+		std::stringstream ss;
+		ss << "Mouse at (" << pt.x << ":" << pt.y << ")" << std::endl;
+		SetWindowText(hWnd, ss.str().c_str());
 	}
 
 	return DefWindowProc(hWnd, msg, wParam, lParam);
