@@ -23,12 +23,7 @@ Window::WindowClass::WindowClass() noexcept
 	wc.lpfnWndProc = HandleMsgSetup;
 	wc.hInstance = GetInstance();
 	wc.lpszClassName = GetName();
-	auto result = RegisterClassEx(&wc);
-	auto error = GetLastError();
-	if (result)
-	{
-		return;
-	}
+	RegisterClassEx(&wc);
 }
 
 Window::WindowClass::~WindowClass()
@@ -59,8 +54,6 @@ Window::Window(const char* name, int width, int height) noexcept
 		WindowClass::GetInstance(),
 		this
 	);
-
-	auto error = GetLastError();
 
 	ShowWindow(hWnd, SW_SHOWDEFAULT);
 }
