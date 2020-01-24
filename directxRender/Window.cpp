@@ -31,7 +31,7 @@ Window::WindowClass::~WindowClass()
 	UnregisterClass(GetName(), GetInstance());
 }
 
-Window::Window(const char* name, int width, int height) noexcept
+Window::Window(const char* name, int width, int height)
 {
 	//calculate window size to fit desired region size
 	//required values positive enough to subtract some pixels and get positive value
@@ -39,7 +39,11 @@ Window::Window(const char* name, int width, int height) noexcept
 	rect.right = rect.left + width;
 	rect.bottom = rect.top + height;
 	const DWORD style = WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU;
-	AdjustWindowRect(&rect, style, FALSE);
+	
+	if (FAILED(AdjustWindowRect(&rect, style, FALSE)))
+	{
+		throw WND_EXCEPT_LASTERR();
+	}
 
 	hWnd = CreateWindow(
 		WindowClass::GetName(),
@@ -54,6 +58,11 @@ Window::Window(const char* name, int width, int height) noexcept
 		WindowClass::GetInstance(),
 		this
 	);
+
+	if (!hWnd)
+	{
+		throw WND_EXCEPT_LASTERR();
+	}
 
 	ShowWindow(hWnd, SW_SHOWDEFAULT);
 }
@@ -103,4 +112,59 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	}
 
 	return DefWindowProc(hWnd, msg, wParam, lParam);
+}
+
+Window::Exception::Exception(const char * file, int line, HRESULT hr)
+	: ExtendedException(file, line), hr(hr)
+{
+}
+
+const char * Window::Exception::what() const
+{
+	std::ostringstream ss;
+	ss << GetType() << std::endl
+		<< "[Error code]: " << GetErrorCode() << std::endl
+		<< "[Description]: " << GetErrorString() << std::endl
+		<< GetOriginString();
+	buffer = ss.str();
+	return buffer.c_str();
+}
+
+const char * Window::Exception::GetType() const noexcept
+{
+	return "Window Exception";
+}
+
+std::string Window::Exception::TranslateErrorCode(HRESULT hr)
+{
+	char* buf = nullptr;
+	DWORD formatFlags = FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS;
+	DWORD msgLen = FormatMessage(
+		formatFlags,
+		nullptr,
+		hr,
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		reinterpret_cast<LPSTR>(&buf),
+		0,
+		nullptr
+	);
+
+	if (msgLen == 0)
+	{
+		return "Unknown error code";
+	}
+
+	std::string errorString(buf);
+	LocalFree(buf);
+	return errorString;
+}
+
+HRESULT Window::Exception::GetErrorCode() const noexcept
+{
+	return hr;
+}
+
+std::string Window::Exception::GetErrorString() const
+{
+	return TranslateErrorCode(hr);
 }

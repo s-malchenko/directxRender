@@ -1,9 +1,23 @@
 #pragma once
 
 #include "EasyWin.h"
+#include "ExtendedException.h"
 
 class Window
 {
+public:
+	class Exception : public ExtendedException
+	{
+	public:
+		Exception(const char* file, int line, HRESULT hr);
+		const char* what() const override;
+		virtual const char* GetType() const noexcept;
+		static std::string TranslateErrorCode(HRESULT hr);
+		HRESULT GetErrorCode() const noexcept;
+		std::string GetErrorString() const;
+	private:
+		HRESULT hr;
+	};
 private:
 	// singleton for registration of window class
 	class WindowClass
@@ -21,7 +35,7 @@ private:
 		HINSTANCE hInst;
 	};
 public:
-	Window(const char* name, int width = 640, int height = 480) noexcept;
+	Window(const char* name, int width = 640, int height = 480);
 	~Window();
 	Window(const Window&) = delete;
 	Window& operator=(const Window&) = delete;
@@ -34,3 +48,6 @@ private:
 	HWND hWnd;
 };
 
+//macro for capturing file and line to exception
+#define WND_EXCEPT(hr) Window::Exception(__FILE__, __LINE__, hr)
+#define WND_EXCEPT_LASTERR() WND_EXCEPT(GetLastError())
