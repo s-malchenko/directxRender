@@ -1,5 +1,6 @@
 #include "Window.h"
 
+#include "resource.h"
 #include <sstream>
 
 Window::WindowClass Window::WindowClass::windowClass;
@@ -22,6 +23,8 @@ Window::WindowClass::WindowClass() noexcept
 	wc.style = CS_OWNDC;
 	wc.lpfnWndProc = HandleMsgSetup;
 	wc.hInstance = GetInstance();
+	wc.hIcon = static_cast<HICON>(LoadImage(hInst, MAKEINTRESOURCE(IDI_ICON1), IMAGE_ICON, 128, 128, 0));
+	wc.hIconSm = static_cast<HICON>(LoadImage(hInst, MAKEINTRESOURCE(IDI_ICON1), IMAGE_ICON, 32, 32, 0));
 	wc.lpszClassName = GetName();
 	RegisterClassEx(&wc);
 }
