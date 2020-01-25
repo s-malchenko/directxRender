@@ -2,6 +2,7 @@
 
 #include "EasyWin.h"
 #include "ExtendedException.h"
+#include "Keyboard.h"
 
 class Window
 {
@@ -43,6 +44,8 @@ private:
 	static LRESULT CALLBACK HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK DeliverMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	LRESULT CALLBACK HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+	Keyboard keyboard;
 	int width;
 	int height;
 	HWND hWnd;

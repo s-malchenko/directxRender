@@ -102,6 +102,8 @@ LRESULT Window::DeliverMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	std::stringstream ss;
+
 	switch (msg)
 	{
 	case WM_CLOSE:
@@ -109,9 +111,39 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		break;
 	case WM_LBUTTONDOWN:
 		const POINTS pt = MAKEPOINTS(lParam);
-		std::stringstream ss;
 		ss << "Mouse at (" << pt.x << ":" << pt.y << ")" << std::endl;
-		SetWindowText(hWnd, ss.str().c_str());
+		break;
+	case WM_KEYDOWN:
+	case WM_SYSKEYDOWN:
+		if (!(lParam & (1 << 30)) || keyboard.AutorepeatEnabled())
+		{
+			keyboard.OnKeyPressed(static_cast<uint8_t>(wParam));
+			ss << "Key pressed " << wParam;
+		}
+		else
+		{
+			ss << "Autorepeat filtered " << wParam;
+		}
+		break;
+	case WM_KEYUP:
+		keyboard.OnKeyReleased(static_cast<uint8_t>(wParam));
+		ss << "Key released " << wParam;
+		break;
+	case WM_CHAR:
+		keyboard.OnChar(static_cast<char>(wParam));
+		break;
+	case WM_KILLFOCUS:
+		// release all keys when lose focus
+		keyboard.ClearState();
+		ss << "Focus lost!";
+		break;
+	}
+
+	auto str = ss.str();
+
+	if (!str.empty())
+	{
+		SetWindowText(hWnd, str.c_str());
 	}
 
 	return DefWindowProc(hWnd, msg, wParam, lParam);
