@@ -3,6 +3,9 @@
 #include "EasyWin.h"
 #include "ExtendedException.h"
 #include "Keyboard.h"
+#include "Mouse.h"
+
+#include <string>
 
 class Window
 {
@@ -40,12 +43,15 @@ public:
 	~Window();
 	Window(const Window&) = delete;
 	Window& operator=(const Window&) = delete;
+	void SetTitle(const std::string& title);
+
+	Keyboard keyboard;
+	Mouse mouse;
 private:
 	static LRESULT CALLBACK HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK DeliverMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	LRESULT CALLBACK HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-	Keyboard keyboard;
 	int width;
 	int height;
 	HWND hWnd;

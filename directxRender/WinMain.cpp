@@ -1,6 +1,8 @@
 #include "EasyWin.h"
 #include "Window.h"
 
+#include <sstream>
+
 int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
 	try
@@ -15,6 +17,26 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		{
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
+
+			while (!window.mouse.Empty())
+			{
+				const auto event = window.mouse.Read();
+
+				if (event.GetType() == Mouse::Event::Type::Move)
+				{
+					std::ostringstream ss;
+					ss << "Mouse moved to " << event.GetPosition().x << ":" << event.GetPosition().y;
+					window.SetTitle(ss.str());
+				}
+				else if (event.GetType() == Mouse::Event::Type::WheelUp)
+				{
+					window.SetTitle("Mouse wheel up");
+				}
+				else if (event.GetType() == Mouse::Event::Type::WheelDown)
+				{
+					window.SetTitle("Mouse wheel down");
+				}
+			}
 		}
 
 		if (result == -1)

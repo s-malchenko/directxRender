@@ -145,6 +145,7 @@
   <ItemGroup>
     <ClCompile Include="ExtendedException.cpp" />
     <ClCompile Include="Keyboard.cpp" />
+    <ClCompile Include="Mouse.cpp" />
     <ClCompile Include="WinMain.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
@@ -152,6 +153,7 @@
     <ClInclude Include="EasyWin.h" />
     <ClInclude Include="ExtendedException.h" />
     <ClInclude Include="Keyboard.h" />
+    <ClInclude Include="Mouse.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Util.h" />
     <ClInclude Include="Window.h" />

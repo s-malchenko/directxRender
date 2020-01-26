@@ -1,0 +1,60 @@
+#include "Mouse.h"
+
+#include "Util.h"
+
+using namespace Util;
+
+Mouse::Position Mouse::GetPosition() const noexcept
+{
+	return pos;
+}
+
+bool Mouse::LeftPressed() const noexcept
+{
+	return leftPressed;
+}
+
+bool Mouse::RightPressed() const noexcept
+{
+	return rightPressed;
+}
+
+void Mouse::PostEvent(Event::Type type, Position newPos)
+{
+	switch (type)
+	{
+	case Event::Type::LPress:
+		leftPressed = true;
+		break;
+	case Event::Type::LRelease:
+		leftPressed = false;
+		break;
+	case Event::Type::RPress:
+		rightPressed = true;
+		break;
+	case Event::Type::RRelease:
+		rightPressed = false;
+		break;
+	case Event::Type::Move:
+		pos = newPos;
+		break;
+	}
+
+	events.emplace(type, *this);
+	Trim(events, bufferSize);
+}
+
+Mouse::Event Mouse::Read()
+{
+	return PopOrDefault(events);
+}
+
+bool Mouse::Empty() const noexcept
+{
+	return events.empty();
+}
+
+void Mouse::Clear() noexcept
+{
+	events = std::queue<Mouse::Event>();
+}

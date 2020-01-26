@@ -11,7 +11,7 @@ bool Keyboard::KeyPressed(uint8_t keyCode) const noexcept
 
 Keyboard::Event Keyboard::ReadKey()
 {
-	return FirstOrDefault(keyBuffer);
+	return PopOrDefault(keyBuffer);
 }
 
 bool Keyboard::KeyEmpty() const noexcept
@@ -26,7 +26,7 @@ void Keyboard::ClearKey() noexcept
 
 char Keyboard::ReadChar() noexcept
 {
-	return FirstOrDefault(charBuffer);
+	return PopOrDefault(charBuffer);
 }
 
 bool Keyboard::CharEmpty() const noexcept

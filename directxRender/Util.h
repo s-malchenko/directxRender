@@ -14,7 +14,7 @@ namespace Util
 	}
 
 	template <class T>
-	T FirstOrDefault(std::queue<T>& q)
+	T PopOrDefault(std::queue<T>& q)
 	{
 		if (!q.empty())
 		{
