@@ -153,6 +153,7 @@
     <ClInclude Include="ExtendedException.h" />
     <ClInclude Include="Keyboard.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="Util.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <ItemGroup>

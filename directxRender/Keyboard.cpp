@@ -1,17 +1,8 @@
 #include "Keyboard.h"
 
-template <class T>
-T firstOrDefault(std::queue<T>& q)
-{
-	if (!q.empty())
-	{
-		auto result = q.front();
-		q.pop();
-		return result;
-	}
+#include "Util.h"
 
-	return T();
-}
+using namespace Util;
 
 bool Keyboard::KeyPressed(uint8_t keyCode) const noexcept
 {
@@ -20,7 +11,7 @@ bool Keyboard::KeyPressed(uint8_t keyCode) const noexcept
 
 Keyboard::Event Keyboard::ReadKey()
 {
-	return firstOrDefault(keyBuffer);
+	return FirstOrDefault(keyBuffer);
 }
 
 bool Keyboard::KeyEmpty() const noexcept
@@ -35,7 +26,7 @@ void Keyboard::ClearKey() noexcept
 
 char Keyboard::ReadChar() noexcept
 {
-	return firstOrDefault(charBuffer);
+	return FirstOrDefault(charBuffer);
 }
 
 bool Keyboard::CharEmpty() const noexcept
@@ -73,20 +64,20 @@ void Keyboard::OnKeyPressed(uint8_t keyCode)
 {
 	keyStates[keyCode] = true;
 	keyBuffer.emplace(Event::Type::Press, keyCode);
-	Trim(keyBuffer);
+	Trim(keyBuffer, bufferSize);
 }
 
 void Keyboard::OnKeyReleased(uint8_t keyCode)
 {
 	keyStates[keyCode] = false;
 	keyBuffer.emplace(Event::Type::Press, keyCode);
-	Trim(keyBuffer);
+	Trim(keyBuffer, bufferSize);
 }
 
 void Keyboard::OnChar(char c)
 {
 	charBuffer.push(c);
-	Trim(charBuffer);
+	Trim(charBuffer, bufferSize);
 }
 
 void Keyboard::ClearState() noexcept

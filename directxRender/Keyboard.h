@@ -18,8 +18,7 @@ public:
 			Release,
 		};
 
-		Event() : type(Type::None), code(0)
-		{}
+		Event() = default;
 		Event(Type type, uint8_t code) : type(type), code(code)
 		{}
 		operator bool() const noexcept
@@ -40,8 +39,8 @@ public:
 		}
 
 	private:
-		Type type;
-		uint8_t code;
+		Type type = Type::None;
+		uint8_t code = 0;
 	};
 
 	Keyboard() = default;
@@ -67,8 +66,6 @@ private:
 	void OnKeyReleased(uint8_t keyCode);
 	void OnChar(char c);
 	void ClearState() noexcept;
-	template<class T>
-	static void Trim(std::queue<T> buffer);
 
 	static constexpr auto keyCount = 256u;
 	static constexpr auto bufferSize = 16u;
@@ -77,12 +74,3 @@ private:
 	std::queue<Event> keyBuffer;
 	std::queue<char> charBuffer;
 };
-
-template<class T>
-inline void Keyboard::Trim(std::queue<T> buffer)
-{
-	while (buffer.size() > bufferSize)
-	{
-		buffer.pop();
-	}
-}

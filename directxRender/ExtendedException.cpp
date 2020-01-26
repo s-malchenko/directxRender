@@ -34,6 +34,6 @@ std::string ExtendedException::GetOriginString() const
 {
 	std::ostringstream ss;
 	ss << "[File]: " << GetFile() << std::endl
-		<< " [Line]: " << GetLine();
+		<< "[Line]: " << GetLine();
 	return ss.str();
 }

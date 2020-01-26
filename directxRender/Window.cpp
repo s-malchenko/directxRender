@@ -43,7 +43,7 @@ Window::Window(const char* name, int width, int height)
 	rect.bottom = rect.top + height;
 	const DWORD style = WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU;
 	
-	if (FAILED(AdjustWindowRect(&rect, style, FALSE)))
+	if (!AdjustWindowRect(&rect, style, FALSE))
 	{
 		throw WND_EXCEPT_LASTERR();
 	}
