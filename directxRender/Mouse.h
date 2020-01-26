@@ -5,6 +5,7 @@
 
 class Mouse
 {
+	friend class Window;
 public:
 	struct Position
 	{
@@ -67,15 +68,18 @@ public:
 	Position GetPosition() const noexcept;
 	bool LeftPressed() const noexcept;
 	bool RightPressed() const noexcept;
-	void PostEvent(Event::Type type, Position pos);
 	Event Read();
 	bool Empty() const noexcept;
 	void Clear() noexcept;
 private:
+	void PostEvent(Event::Type type, Position pos);
+	void OnWheelDelta(int delta, Position pos);
 	bool leftPressed = false;
 	bool rightPressed = false;
+	int wheelDelta = 0;
 	Position pos = { 0, 0 };
 	std::queue<Event> events;
 
 	static constexpr size_t bufferSize = 16;
+	static constexpr uint16_t wheelDeltaThreshold = 120;
 };

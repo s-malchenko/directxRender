@@ -13,6 +13,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		MSG msg;
 		BOOL result;
 
+		int wheelDelta = 0;
 		while (result = GetMessage(&msg, nullptr, 0, 0) > 0)
 		{
 			TranslateMessage(&msg);
@@ -20,21 +21,27 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 			while (!window.mouse.Empty())
 			{
+				std::ostringstream ss;
 				const auto event = window.mouse.Read();
 
-				if (event.GetType() == Mouse::Event::Type::Move)
+				switch (event.GetType())
 				{
-					std::ostringstream ss;
+				case Mouse::Event::Type::Move:
 					ss << "Mouse moved to " << event.GetPosition().x << ":" << event.GetPosition().y;
+					break;
+				case Mouse::Event::Type::WheelUp:
+					++wheelDelta;
+					ss << "Wheel " << wheelDelta;
+					break;
+				case Mouse::Event::Type::WheelDown:
+					--wheelDelta;
+					ss << "Wheel " << wheelDelta;
+					break;
+				}
+
+				if (!ss.str().empty())
+				{
 					window.SetTitle(ss.str());
-				}
-				else if (event.GetType() == Mouse::Event::Type::WheelUp)
-				{
-					window.SetTitle("Mouse wheel up");
-				}
-				else if (event.GetType() == Mouse::Event::Type::WheelDown)
-				{
-					window.SetTitle("Mouse wheel down");
 				}
 			}
 		}

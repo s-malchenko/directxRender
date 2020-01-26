@@ -34,7 +34,7 @@ Window::WindowClass::~WindowClass()
 	UnregisterClass(GetName(), GetInstance());
 }
 
-Window::Window(const char* name, int width, int height)
+Window::Window(const char* name, int width, int height) : width(width), height(height)
 {
 	//calculate window size to fit desired region size
 	//required values positive enough to subtract some pixels and get positive value
@@ -132,14 +132,7 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		mouse.PostEvent(Mouse::Event::Type::RRelease, MOUSE_POSITION(lParam));
 		break;
 	case WM_MOUSEWHEEL:
-		if (GET_WHEEL_DELTA_WPARAM(wParam) > 0)
-		{
-			mouse.PostEvent(Mouse::Event::Type::WheelUp, MOUSE_POSITION(lParam));
-		}
-		else
-		{
-			mouse.PostEvent(Mouse::Event::Type::WheelDown, MOUSE_POSITION(lParam));
-		}
+		mouse.OnWheelDelta(GET_WHEEL_DELTA_WPARAM(wParam), MOUSE_POSITION(lParam));
 		break;
 	case WM_MOUSEMOVE:
 		mouse.PostEvent(Mouse::Event::Type::Move, MOUSE_POSITION(lParam));

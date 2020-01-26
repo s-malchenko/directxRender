@@ -44,6 +44,23 @@ void Mouse::PostEvent(Event::Type type, Position newPos)
 	Trim(events, bufferSize);
 }
 
+void Mouse::OnWheelDelta(int delta, Position pos)
+{
+	wheelDelta += delta;
+
+	while (wheelDelta >= wheelDeltaThreshold)
+	{
+		this->PostEvent(Mouse::Event::WheelUp, pos);
+		wheelDelta -= wheelDeltaThreshold;
+	}
+
+	while (wheelDelta <= -wheelDeltaThreshold)
+	{
+		this->PostEvent(Mouse::Event::WheelDown, pos);
+		wheelDelta += wheelDeltaThreshold;
+	}
+}
+
 Mouse::Event Mouse::Read()
 {
 	return PopOrDefault(events);
