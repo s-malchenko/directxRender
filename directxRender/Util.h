@@ -4,6 +4,8 @@
 
 namespace Util
 {
+	void SleepMs(size_t ms);
+
 	template<class T>
 	inline void Trim(std::queue<T> q, size_t maxCount)
 	{
