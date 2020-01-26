@@ -9,6 +9,11 @@ Mouse::Position Mouse::GetPosition() const noexcept
 	return pos;
 }
 
+bool Mouse::Inside() const noexcept
+{
+	return inside;
+}
+
 bool Mouse::LeftPressed() const noexcept
 {
 	return leftPressed;
@@ -23,6 +28,12 @@ void Mouse::PostEvent(Event::Type type, Position newPos)
 {
 	switch (type)
 	{
+	case Event::Type::EnterRegion:
+		inside = true;
+		break;
+	case Event::Type::LeaveRegion:
+		inside = false;
+		break;
 	case Event::Type::LPress:
 		leftPressed = true;
 		break;

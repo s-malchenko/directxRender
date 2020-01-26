@@ -9,8 +9,8 @@ class Mouse
 public:
 	struct Position
 	{
-		uint16_t x;
-		uint16_t y;
+		int16_t x;
+		int16_t y;
 	};
 
 	class Event
@@ -19,6 +19,8 @@ public:
 		enum Type
 		{
 			None,
+			EnterRegion,
+			LeaveRegion,
 			LPress,
 			LRelease,
 			RPress,
@@ -66,6 +68,7 @@ public:
 	Mouse(const Mouse&) = delete;
 	Mouse& operator=(const Mouse&) = delete;
 	Position GetPosition() const noexcept;
+	bool Inside() const noexcept;
 	bool LeftPressed() const noexcept;
 	bool RightPressed() const noexcept;
 	Event Read();
@@ -76,6 +79,7 @@ private:
 	void OnWheelDelta(int delta, Position pos);
 	bool leftPressed = false;
 	bool rightPressed = false;
+	bool inside = false;
 	int wheelDelta = 0;
 	Position pos = { 0, 0 };
 	std::queue<Event> events;

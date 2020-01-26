@@ -37,6 +37,12 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 					--wheelDelta;
 					ss << "Wheel " << wheelDelta;
 					break;
+				case Mouse::Event::EnterRegion:
+					ss << "Enter";
+					break;
+				case Mouse::Event::LeaveRegion:
+					ss << "Leave";
+					break;
 				}
 
 				if (!ss.str().empty())

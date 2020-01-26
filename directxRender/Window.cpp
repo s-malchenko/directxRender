@@ -124,18 +124,55 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		break;
 	case WM_LBUTTONUP:
 		mouse.PostEvent(Mouse::Event::Type::LRelease, MOUSE_POSITION(lParam));
+
+		if (!PointsInside(lParam)
+			&& !mouse.LeftPressed()
+			&& !mouse.RightPressed())
+		{
+			ReleaseCapture();
+			mouse.PostEvent(Mouse::Event::Type::LeaveRegion, MOUSE_POSITION(lParam));
+		}
 		break;
 	case WM_RBUTTONDOWN:
 		mouse.PostEvent(Mouse::Event::Type::RPress, MOUSE_POSITION(lParam));
 		break;
 	case WM_RBUTTONUP:
 		mouse.PostEvent(Mouse::Event::Type::RRelease, MOUSE_POSITION(lParam));
+
+		if (!PointsInside(lParam)
+			&& !mouse.LeftPressed()
+			&& !mouse.RightPressed())
+		{
+			ReleaseCapture();
+			mouse.PostEvent(Mouse::Event::Type::LeaveRegion, MOUSE_POSITION(lParam));
+		}
 		break;
 	case WM_MOUSEWHEEL:
 		mouse.OnWheelDelta(GET_WHEEL_DELTA_WPARAM(wParam), MOUSE_POSITION(lParam));
 		break;
 	case WM_MOUSEMOVE:
-		mouse.PostEvent(Mouse::Event::Type::Move, MOUSE_POSITION(lParam));
+		if (!PointsInside(lParam)) //mouse moved outside of client region
+		{
+			if (mouse.LeftPressed() || mouse.RightPressed())
+			{
+				mouse.PostEvent(Mouse::Event::Type::Move, MOUSE_POSITION(lParam));
+			}
+			else
+			{
+				ReleaseCapture();
+				mouse.PostEvent(Mouse::Event::Type::LeaveRegion, MOUSE_POSITION(lParam));
+			}
+		}
+		else //mouse is in client region
+		{
+			mouse.PostEvent(Mouse::Event::Type::Move, MOUSE_POSITION(lParam));
+
+			if (!mouse.Inside())
+			{
+				SetCapture(hWnd);
+				mouse.PostEvent(Mouse::Event::Type::EnterRegion, MOUSE_POSITION(lParam));
+			}
+		}
 		break;
 
 	//keyboard messages
@@ -159,6 +196,17 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	}
 
 	return DefWindowProc(hWnd, msg, wParam, lParam);
+}
+
+bool Window::PointsInside(LPARAM lParam) const noexcept
+{
+	const auto pos = MAKEPOINTS(lParam);
+	return !(
+		pos.x < 0
+		|| pos.x > width
+		|| pos.y < 0
+		|| pos.y > height
+		);
 }
 
 Window::Exception::Exception(const char * file, int line, HRESULT hr)
