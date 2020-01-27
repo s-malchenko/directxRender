@@ -101,6 +101,11 @@ std::optional<int> Window::ProcessMessages()
 	return {};
 }
 
+Graphics & Window::Gfx()
+{
+	return *pGfx;
+}
+
 LRESULT Window::HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	//setup user data and real callback for message processing

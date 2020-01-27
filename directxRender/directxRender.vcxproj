@@ -145,6 +145,7 @@
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="ExtendedException.cpp" />
+    <ClCompile Include="Graphics.cpp" />
     <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="Mouse.cpp" />
     <ClCompile Include="Timer.cpp" />
@@ -156,6 +157,7 @@
     <ClInclude Include="Application.h" />
     <ClInclude Include="EasyWin.h" />
     <ClInclude Include="ExtendedException.h" />
+    <ClInclude Include="Graphics.h" />
     <ClInclude Include="Keyboard.h" />
     <ClInclude Include="Mouse.h" />
     <ClInclude Include="resource.h" />
@@ -167,7 +169,7 @@
     <ResourceCompile Include="directxRender.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\..\..\Users\Serega\Downloads\parrot.ico" />
+    <Image Include="Resources\parrot.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

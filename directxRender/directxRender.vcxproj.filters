@@ -39,6 +39,9 @@
     <ClCompile Include="Util.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Graphics.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EasyWin.h">
@@ -68,6 +71,9 @@
     <ClInclude Include="Timer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Graphics.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="directxRender.rc">
@@ -75,7 +81,7 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\..\..\Users\Serega\Downloads\parrot.ico">
+    <Image Include="Resources\parrot.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

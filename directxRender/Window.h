@@ -4,9 +4,11 @@
 #include "ExtendedException.h"
 #include "Keyboard.h"
 #include "Mouse.h"
+#include "Graphics.h"
 
 #include <string>
 #include <optional>
+#include <memory>
 
 class Window
 {
@@ -49,6 +51,7 @@ public:
 
 	Keyboard keyboard;
 	Mouse mouse;
+	Graphics& Gfx();
 private:
 	static LRESULT CALLBACK HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK DeliverMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -58,6 +61,7 @@ private:
 	int width;
 	int height;
 	HWND hWnd;
+	std::unique_ptr<Graphics> pGfx;
 };
 
 //macro for capturing file and line to exception
