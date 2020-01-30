@@ -2,6 +2,9 @@
 
 #pragma comment(lib, "d3d11.lib")
 
+#define GFX_THROW_FAILED(hrcall) { if (HRESULT _hResult; FAILED(_hResult = (hrcall))) throw Graphics::Exception(__FILE__, __LINE__, _hResult); }
+#define GFX_DEVICE_REMOVED_EXCEPT(_hResult) Graphics::DeviceRemovedException(__FILE__, __LINE__, _hResult)
+
 Graphics::Graphics(HWND hWnd)
 {
 	DXGI_SWAP_CHAIN_DESC sd = { 0 };
@@ -15,25 +18,27 @@ Graphics::Graphics(HWND hWnd)
 	sd.Windowed = true;
 	sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 
-	D3D11CreateDeviceAndSwapChain(
-		nullptr,
-		D3D_DRIVER_TYPE_HARDWARE,
-		nullptr,
-		0,
-		nullptr,
-		0,
-		D3D11_SDK_VERSION,
-		&sd,
-		&swapChain,
-		&device,
-		nullptr,
-		&context
+	GFX_THROW_FAILED(
+		D3D11CreateDeviceAndSwapChain(
+			nullptr,
+			D3D_DRIVER_TYPE_HARDWARE,
+			nullptr,
+			D3D11_CREATE_DEVICE_DEBUG,
+			nullptr,
+			0,
+			D3D11_SDK_VERSION,
+			&sd,
+			&swapChain,
+			&device,
+			nullptr,
+			&context
+		)
 	);
 
 	// get access to texture subresource of swap chain
 	ID3D11Resource* backBuffer = nullptr;
-	swapChain->GetBuffer(0, __uuidof(ID3D11Resource), reinterpret_cast<void**>(&backBuffer));
-	device->CreateRenderTargetView(backBuffer, nullptr, &targetView);
+	GFX_THROW_FAILED(swapChain->GetBuffer(0, __uuidof(ID3D11Resource), reinterpret_cast<void**>(&backBuffer)));
+	GFX_THROW_FAILED(device->CreateRenderTargetView(backBuffer, nullptr, &targetView));
 	backBuffer->Release();
 }
 
@@ -48,11 +53,29 @@ Graphics::~Graphics()
 
 void Graphics::EndFrame()
 {
-	swapChain->Present(1, 0);
+	if (const auto hr = swapChain->Present(1, 0); FAILED(hr))
+	{
+		if (hr == DXGI_ERROR_DEVICE_REMOVED)
+		{
+			throw GFX_DEVICE_REMOVED_EXCEPT(device->GetDeviceRemovedReason());
+		}
+		
+		GFX_THROW_FAILED(hr);
+	}
 }
 
 void Graphics::ClearBuffer(float red, float green, float blue) noexcept
 {
 	const float color[] = { red, green, blue, 1 };
 	context->ClearRenderTargetView(targetView, color);
+}
+
+const char * Graphics::Exception::GetType() const noexcept
+{
+	return "Graphics Exception";
+}
+
+const char * Graphics::DeviceRemovedException::GetType() const noexcept
+{
+	return "DeviceRemoved Exception";
 }

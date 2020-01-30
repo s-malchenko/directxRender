@@ -1,11 +1,26 @@
 #pragma once
 
 #include "EasyWin.h"
+#include "HrException.h"
 #include <d3d11.h>
 
 class Graphics
 {
 public:
+	class Exception : public HrException
+	{
+		using HrException::HrException;
+	public:
+		const char* GetType() const noexcept override;
+	};
+
+	class DeviceRemovedException : public Exception
+	{
+		using Exception::Exception;
+	public:
+		const char* GetType() const noexcept override;
+	};
+
 	Graphics(HWND hWnd);
 	Graphics(const Graphics&) = delete;
 	Graphics& operator=(const Graphics&) = delete;

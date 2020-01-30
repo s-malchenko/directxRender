@@ -2,6 +2,7 @@
 
 #include "EasyWin.h"
 #include "ExtendedException.h"
+#include "HrException.h"
 #include "Keyboard.h"
 #include "Mouse.h"
 #include "Graphics.h"
@@ -13,17 +14,18 @@
 class Window
 {
 public:
-	class Exception : public ExtendedException
+	class Exception : public HrException
 	{
+		using HrException::HrException;
 	public:
-		Exception(const char* file, int line, HRESULT hr);
-		const char* what() const override;
-		virtual const char* GetType() const noexcept;
-		static std::string TranslateErrorCode(HRESULT hr);
-		HRESULT GetErrorCode() const noexcept;
-		std::string GetErrorString() const;
-	private:
-		HRESULT hr;
+		const char* GetType() const noexcept override;
+	};
+
+	class NoGfxException : public ExtendedException
+	{
+		using ExtendedException::ExtendedException;
+	public:
+		const char* GetType() const noexcept override;
 	};
 private:
 	// singleton for registration of window class

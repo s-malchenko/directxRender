@@ -104,6 +104,11 @@ std::optional<int> Window::ProcessMessages()
 
 Graphics & Window::Gfx()
 {
+	if (!pGfx)
+	{
+		throw Window::NoGfxException(__FILE__, __LINE__);
+	}
+
 	return *pGfx;
 }
 
@@ -235,57 +240,12 @@ bool Window::PointsInside(LPARAM lParam) const noexcept
 		);
 }
 
-Window::Exception::Exception(const char * file, int line, HRESULT hr)
-	: ExtendedException(file, line), hr(hr)
-{
-}
-
-const char* Window::Exception::what() const
-{
-	std::ostringstream ss;
-	ss << GetType() << std::endl
-		<< "[Error code]: " << GetErrorCode() << std::endl
-		<< "[Description]: " << GetErrorString() << std::endl
-		<< GetOriginString();
-	buffer = ss.str();
-	return buffer.c_str();
-}
-
-const char* Window::Exception::GetType() const noexcept
+const char * Window::Exception::GetType() const noexcept
 {
 	return "Window Exception";
 }
 
-std::string Window::Exception::TranslateErrorCode(HRESULT hr)
+const char * Window::NoGfxException::GetType() const noexcept
 {
-	char* buf = nullptr;
-	DWORD formatFlags = FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS;
-	DWORD msgLen = FormatMessage(
-		formatFlags,
-		nullptr,
-		hr,
-		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		reinterpret_cast<LPSTR>(&buf),
-		0,
-		nullptr
-	);
-
-	if (msgLen == 0)
-	{
-		return "Unknown error code";
-	}
-
-	std::string errorString(buf);
-	LocalFree(buf);
-	return errorString;
-}
-
-HRESULT Window::Exception::GetErrorCode() const noexcept
-{
-	return hr;
-}
-
-std::string Window::Exception::GetErrorString() const
-{
-	return TranslateErrorCode(hr);
+	return "Window No Graphics Exception";
 }
