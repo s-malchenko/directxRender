@@ -1,9 +1,9 @@
 #include "Graphics.h"
 
-#pragma comment(lib, "d3d11.lib")
+#include "Util.h"
+#include <sstream>
 
-#define GFX_THROW_FAILED(hrcall) { if (HRESULT _hResult; FAILED(_hResult = (hrcall))) throw Graphics::Exception(__FILE__, __LINE__, _hResult); }
-#define GFX_DEVICE_REMOVED_EXCEPT(_hResult) Graphics::DeviceRemovedException(__FILE__, __LINE__, _hResult)
+#pragma comment(lib, "d3d11.lib")
 
 Graphics::Graphics(HWND hWnd)
 {
@@ -18,12 +18,18 @@ Graphics::Graphics(HWND hWnd)
 	sd.Windowed = true;
 	sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 
-	GFX_THROW_FAILED(
+	UINT flags = 0;
+
+#ifndef NDEBUG
+	flags |= D3D11_CREATE_DEVICE_DEBUG;
+#endif
+
+	GFX_THROW_INFO(
 		D3D11CreateDeviceAndSwapChain(
 			nullptr,
 			D3D_DRIVER_TYPE_HARDWARE,
 			nullptr,
-			D3D11_CREATE_DEVICE_DEBUG,
+			flags,
 			nullptr,
 			0,
 			D3D11_SDK_VERSION,
@@ -37,22 +43,26 @@ Graphics::Graphics(HWND hWnd)
 
 	// get access to texture subresource of swap chain
 	ID3D11Resource* backBuffer = nullptr;
-	GFX_THROW_FAILED(swapChain->GetBuffer(0, __uuidof(ID3D11Resource), reinterpret_cast<void**>(&backBuffer)));
-	GFX_THROW_FAILED(device->CreateRenderTargetView(backBuffer, nullptr, &targetView));
+	GFX_THROW_INFO(swapChain->GetBuffer(0, __uuidof(ID3D11Resource), reinterpret_cast<void**>(&backBuffer)));
+	GFX_THROW_INFO(device->CreateRenderTargetView(backBuffer, nullptr, &targetView));
 	backBuffer->Release();
 }
 
-#define RELEASE(ptr) { if (ptr) ptr->Release(); }
+
 
 Graphics::~Graphics()
 {
-	RELEASE(device);
-	RELEASE(swapChain);
-	RELEASE(context);
+	Util::ReleaseIfValid(device);
+	Util::ReleaseIfValid(swapChain);
+	Util::ReleaseIfValid(context);
 }
 
 void Graphics::EndFrame()
 {
+#ifndef NDEBUG
+	infoManager.Set();
+#endif
+
 	if (const auto hr = swapChain->Present(1, 0); FAILED(hr))
 	{
 		if (hr == DXGI_ERROR_DEVICE_REMOVED)
@@ -60,7 +70,7 @@ void Graphics::EndFrame()
 			throw GFX_DEVICE_REMOVED_EXCEPT(device->GetDeviceRemovedReason());
 		}
 		
-		GFX_THROW_FAILED(hr);
+		throw GFX_EXCEPT(hr);
 	}
 }
 
@@ -70,12 +80,48 @@ void Graphics::ClearBuffer(float red, float green, float blue) noexcept
 	context->ClearRenderTargetView(targetView, color);
 }
 
-const char * Graphics::Exception::GetType() const noexcept
+Graphics::Exception::Exception(const char* file, int line, HRESULT hr, const std::vector<std::string>& messages)
+	: HrException(file, line, hr)
+{
+	std::ostringstream ss;
+
+	for (const auto& msg : messages)
+	{
+		ss << msg << std::endl;
+	}
+
+	info = ss.str();
+}
+
+const char* Graphics::Exception::what() const
+{
+	if (!info.empty())
+	{
+		std::ostringstream ss;
+		ss << HrException::what() << std::endl << info;
+		buffer = ss.str();
+		return buffer.c_str();
+	}
+
+	return HrException::what();
+}
+
+const char* Graphics::Exception::GetType() const noexcept
 {
 	return "Graphics Exception";
 }
 
-const char * Graphics::DeviceRemovedException::GetType() const noexcept
+const std::string & Graphics::Exception::GetErrorInfo() const
+{
+	return info;
+}
+
+Graphics::DeviceRemovedException::DeviceRemovedException(const char* file, int line, HRESULT hr, const std::vector<std::string>& messages)
+	: Exception(file, line, hr, messages)
+{
+}
+
+const char* Graphics::DeviceRemovedException::GetType() const noexcept
 {
 	return "DeviceRemoved Exception";
 }

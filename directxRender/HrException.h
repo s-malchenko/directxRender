@@ -15,3 +15,5 @@ public:
 private:
 	HRESULT hr;
 };
+
+#define HR_EXCEPT_LASTERR() HrException(__FILE__, __LINE__, GetLastError())
