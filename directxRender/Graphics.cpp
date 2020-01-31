@@ -5,6 +5,8 @@
 
 #pragma comment(lib, "d3d11.lib")
 
+namespace wrl = Microsoft::WRL;
+
 Graphics::Graphics(HWND hWnd)
 {
 	DXGI_SWAP_CHAIN_DESC sd = { 0 };
@@ -42,19 +44,9 @@ Graphics::Graphics(HWND hWnd)
 	);
 
 	// get access to texture subresource of swap chain
-	ID3D11Resource* backBuffer = nullptr;
-	GFX_THROW_INFO(swapChain->GetBuffer(0, __uuidof(ID3D11Resource), reinterpret_cast<void**>(&backBuffer)));
-	GFX_THROW_INFO(device->CreateRenderTargetView(backBuffer, nullptr, &targetView));
-	backBuffer->Release();
-}
-
-
-
-Graphics::~Graphics()
-{
-	Util::ReleaseIfValid(device);
-	Util::ReleaseIfValid(swapChain);
-	Util::ReleaseIfValid(context);
+	wrl::ComPtr<ID3D11Resource> backBuffer;
+	GFX_THROW_INFO(swapChain->GetBuffer(0, __uuidof(ID3D11Resource), &backBuffer));
+	GFX_THROW_INFO(device->CreateRenderTargetView(backBuffer.Get(), nullptr, &targetView));
 }
 
 void Graphics::EndFrame()
@@ -69,7 +61,7 @@ void Graphics::EndFrame()
 		{
 			throw GFX_DEVICE_REMOVED_EXCEPT(device->GetDeviceRemovedReason());
 		}
-		
+
 		throw GFX_EXCEPT(hr);
 	}
 }
@@ -77,7 +69,7 @@ void Graphics::EndFrame()
 void Graphics::ClearBuffer(float red, float green, float blue) noexcept
 {
 	const float color[] = { red, green, blue, 1 };
-	context->ClearRenderTargetView(targetView, color);
+	context->ClearRenderTargetView(targetView.Get(), color);
 }
 
 Graphics::Exception::Exception(const char* file, int line, HRESULT hr, const std::vector<std::string>& messages)

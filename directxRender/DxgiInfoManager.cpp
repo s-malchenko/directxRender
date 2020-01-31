@@ -25,32 +25,26 @@ DxgiInfoManager::DxgiInfoManager()
 		throw HR_EXCEPT_LASTERR();
 	}
 
-	GFX_THROW_NOINFO(DxgiGetDebugInterface(__uuidof(IDXGIInfoQueue), reinterpret_cast<void**>(&pDxgiInfoQueue)));
-}
-
-
-DxgiInfoManager::~DxgiInfoManager()
-{
-	Util::ReleaseIfValid(pDxgiInfoQueue);
+	GFX_THROW_NOINFO(DxgiGetDebugInterface(__uuidof(IDXGIInfoQueue), &infoQueue));
 }
 
 void DxgiInfoManager::Set()
 {
-	next = pDxgiInfoQueue->GetNumStoredMessages(DXGI_DEBUG_ALL);
+	next = infoQueue->GetNumStoredMessages(DXGI_DEBUG_ALL);
 }
 
 std::vector<std::string> DxgiInfoManager::GetMessages() const
 {
 	std::vector<std::string> messages;
-	const auto end = pDxgiInfoQueue->GetNumStoredMessages(DXGI_DEBUG_ALL);
+	const auto end = infoQueue->GetNumStoredMessages(DXGI_DEBUG_ALL);
 
 	for (auto i = next; i < end; ++i)
 	{
 		size_t length;
-		GFX_THROW_NOINFO(pDxgiInfoQueue->GetMessage(DXGI_DEBUG_ALL, i, nullptr, &length));
+		GFX_THROW_NOINFO(infoQueue->GetMessage(DXGI_DEBUG_ALL, i, nullptr, &length));
 		auto buffer = std::make_unique<byte[]>(length);
 		auto pMessage = reinterpret_cast<DXGI_INFO_QUEUE_MESSAGE*>(buffer.get());
-		GFX_THROW_NOINFO(pDxgiInfoQueue->GetMessage(DXGI_DEBUG_ALL, i, pMessage, &length));
+		GFX_THROW_NOINFO(infoQueue->GetMessage(DXGI_DEBUG_ALL, i, pMessage, &length));
 		messages.emplace_back(pMessage->pDescription);
 	}
 

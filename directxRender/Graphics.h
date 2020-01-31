@@ -1,11 +1,12 @@
 #pragma once
 
 #include "EasyWin.h"
-#include "HrException.h"
 #include "DxgiInfoManager.h"
+#include "HrException.h"
 #include <d3d11.h>
-#include <vector>
 #include <string>
+#include <vector>
+#include <wrl.h>
 
 class Graphics
 {
@@ -31,24 +32,22 @@ public:
 	Graphics(HWND hWnd);
 	Graphics(const Graphics&) = delete;
 	Graphics& operator=(const Graphics&) = delete;
-	~Graphics();
 	void EndFrame();
 	void ClearBuffer(float red, float green, float blue) noexcept;
-
 private:
-	ID3D11Device* device = nullptr;
-	IDXGISwapChain* swapChain = nullptr;
-	ID3D11DeviceContext* context = nullptr;
-	ID3D11RenderTargetView* targetView = nullptr;
+	Microsoft::WRL::ComPtr<ID3D11Device> device;
+	Microsoft::WRL::ComPtr<IDXGISwapChain> swapChain;
+	Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
+	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> targetView;
 #ifndef NDEBUG
 	DxgiInfoManager infoManager;
 #endif
 };
 
-#define GFX_EXCEPT_NOINFO(hr) Graphics::Exception(__LINE__, __FILE__, (hr))
+#define GFX_EXCEPT_NOINFO(hr) Graphics::Exception(__FILE__, __LINE__, (hr))
 #define GFX_THROW_NOINFO(hrcall) { if (HRESULT _hResult; FAILED(_hResult = (hrcall))) throw Graphics::Exception(__FILE__, __LINE__, _hResult); }
 
-#ifndef NDEEBUG
+#ifndef NDEBUG
 #define GFX_EXCEPT(hr) Graphics::Exception(__FILE__, __LINE__, (hr), infoManager.GetMessages())
 #define GFX_THROW_INFO(hrcall) { infoManager.Set(); if (HRESULT _hResult; FAILED(_hResult = (hrcall))) throw Graphics::Exception(__FILE__, __LINE__, _hResult, infoManager.GetMessages()); }
 #define GFX_DEVICE_REMOVED_EXCEPT(_hResult) Graphics::DeviceRemovedException(__FILE__, __LINE__, _hResult, infoManager.GetMessages())

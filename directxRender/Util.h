@@ -27,13 +27,4 @@ namespace Util
 
 		return T();
 	}
-
-	template <class T>
-	void ReleaseIfValid(T* ptr)
-	{
-		if (ptr)
-		{
-			ptr->Release();
-		}
-	}
 }
