@@ -34,5 +34,6 @@ void Application::ProceedFrame()
 	float green = (std::cos(time * 1.3f) + 1) / 2;
 	float blue = (std::cos(time * 0.7f) + 1) / 2;
 	window.Gfx().ClearBuffer(red, green, blue);
+	window.Gfx().DrawTestTriangle();
 	window.Gfx().EndFrame();
 }
