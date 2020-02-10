@@ -97,6 +97,9 @@ void Graphics::DrawTestTriangle()
 		{0.0f, 0.5f, {1.0f, 0.0f, 1.0f}},
 		{0.5f, -0.5f, {0.0f, 1.0f, 1.0f}},
 		{-0.5f, -0.5f, {1.0f, 1.0f, 0.0f}},
+		{0.7f, 0.0f, {1.0f, 1.0f, 0.0f}},
+		{0.0f, -0.7f, {1.0f, 0.0f, 1.0f}},
+		{-0.7f, 0.0f, {0.0f, 1.0f, 1.0f}},
 	};
 
 	D3D11_BUFFER_DESC desc = {};
@@ -111,6 +114,25 @@ void Graphics::DrawTestTriangle()
 	const UINT stride = sizeof(Vertex);
 	const UINT offset = 0;
 	context->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
+
+	const uint16_t indices[] = 
+	{
+		0, 1, 2,
+		0, 3, 1,
+		1, 4, 2,
+		2, 5, 0,
+	};
+
+	D3D11_BUFFER_DESC idesc = {};
+	idesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	idesc.Usage = D3D11_USAGE_DEFAULT;
+	idesc.ByteWidth = sizeof(indices);
+	idesc.StructureByteStride = sizeof(uint16_t);
+	D3D11_SUBRESOURCE_DATA isd = {};
+	isd.pSysMem = indices;
+	wrl::ComPtr<ID3D11Buffer> indexBuffer;
+	GFX_THROW_INFO(device->CreateBuffer(&idesc, &isd, &indexBuffer));
+	context->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
 
 	wrl::ComPtr<ID3DBlob> blob;
 	wrl::ComPtr<ID3D11PixelShader> pShader;
@@ -148,7 +170,7 @@ void Graphics::DrawTestTriangle()
 	context->OMSetRenderTargets(1, targetView.GetAddressOf(), nullptr);
 	context->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	GFX_THROW_INFO_VOID(context->Draw(static_cast<UINT>(std::size(vertices)), 0));
+	GFX_THROW_INFO_VOID(context->DrawIndexed(static_cast<unsigned int>(std::size(indices)), 0, 0));
 }
 
 Graphics::Exception::Exception(const char* file, int line, HRESULT hr, const std::vector<std::string>& messages)
