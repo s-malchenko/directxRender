@@ -4,10 +4,15 @@ struct VSOut
 	float4 pos : SV_Position;
 };
 
+cbuffer rotMtx
+{
+	matrix transformation;
+};
+
 VSOut main(float2 pos : Position, float3 color : Color)
 {
 	VSOut result;
-	result.pos = float4(pos.x, pos.y, 0, 1);
+	result.pos = mul(float4(pos.x, pos.y, 0, 1), transformation);
 	result.color = color;
 	return result;
 }

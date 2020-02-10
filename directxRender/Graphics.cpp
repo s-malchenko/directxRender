@@ -74,7 +74,7 @@ void Graphics::ClearBuffer(float red, float green, float blue) noexcept
 	context->ClearRenderTargetView(targetView.Get(), color);
 }
 
-void Graphics::DrawTestTriangle()
+void Graphics::DrawTestTriangle(float angle)
 {
 	namespace wrl = Microsoft::WRL;
 
@@ -133,6 +133,36 @@ void Graphics::DrawTestTriangle()
 	wrl::ComPtr<ID3D11Buffer> indexBuffer;
 	GFX_THROW_INFO(device->CreateBuffer(&idesc, &isd, &indexBuffer));
 	context->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
+
+	struct ConstantBuffer
+	{
+		struct
+		{
+			float element[4][4];
+		} transformation;
+	};
+
+	const ConstantBuffer cb = 
+	{
+		{
+			std::cos(angle), std::sin(angle), 0, 0,
+			-std::sin(angle), std::cos(angle), 0, 0,
+			0, 0, 1, 0,
+			0, 0, 0, 1,
+		}
+	};
+
+	D3D11_BUFFER_DESC cdesc = {};
+	cdesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	cdesc.Usage = D3D11_USAGE_DYNAMIC;
+	cdesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	cdesc.ByteWidth = sizeof(cb);
+	cdesc.StructureByteStride = 0;
+	D3D11_SUBRESOURCE_DATA csd = {};
+	csd.pSysMem = &cb;
+	wrl::ComPtr<ID3D11Buffer> constantBuffer;
+	GFX_THROW_INFO(device->CreateBuffer(&cdesc, &csd, &constantBuffer));
+	context->VSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
 
 	wrl::ComPtr<ID3DBlob> blob;
 	wrl::ComPtr<ID3D11PixelShader> pShader;
