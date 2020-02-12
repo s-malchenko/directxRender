@@ -35,7 +35,7 @@ public:
 	void EndFrame();
 	void ClearBuffer(float red, float green, float blue) noexcept;
 	void HandleWindowResize();
-	void DrawTestTriangle(float angle, float xOffset, float yOffset);
+	void DrawTestCube(float angle, float xOffset, float yOffset);
 
 private:
 	Microsoft::WRL::ComPtr<ID3D11Device> device;
