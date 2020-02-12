@@ -2,14 +2,16 @@
 
 #include "Util.h"
 #include <d3dcompiler.h>
+#include <DirectXMath.h>
 #include <sstream>
 
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "D3DCompiler.lib")
 
 namespace wrl = Microsoft::WRL;
+namespace dx = DirectX;
 
-Graphics::Graphics(HWND hWnd)
+Graphics::Graphics(HWND hWnd) : hWnd(hWnd)
 {
 	DXGI_SWAP_CHAIN_DESC sd = { 0 };
 	sd.BufferDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
@@ -49,6 +51,7 @@ Graphics::Graphics(HWND hWnd)
 	wrl::ComPtr<ID3D11Resource> backBuffer;
 	GFX_THROW_INFO(swapChain->GetBuffer(0, __uuidof(ID3D11Resource), &backBuffer));
 	GFX_THROW_INFO(device->CreateRenderTargetView(backBuffer.Get(), nullptr, &targetView));
+	HandleWindowResize();
 }
 
 void Graphics::EndFrame()
@@ -74,7 +77,22 @@ void Graphics::ClearBuffer(float red, float green, float blue) noexcept
 	context->ClearRenderTargetView(targetView.Get(), color);
 }
 
-void Graphics::DrawTestTriangle(float angle)
+void Graphics::HandleWindowResize()
+{
+	RECT rect;
+	GetClientRect(hWnd, &rect);
+	width = static_cast<uint16_t>(rect.right - rect.left);
+	height = static_cast<uint16_t>(rect.bottom - rect.top);
+	aspect = width * 1.0f / height;
+
+	D3D11_VIEWPORT vp = { 0 };
+	vp.Width = width;
+	vp.Height = height;
+	vp.MaxDepth = 1;
+	context->RSSetViewports(1, &vp);
+}
+
+void Graphics::DrawTestTriangle(float angle, float xOffset, float yOffset)
 {
 	namespace wrl = Microsoft::WRL;
 
@@ -94,7 +112,7 @@ void Graphics::DrawTestTriangle(float angle)
 
 	const Vertex vertices[] =
 	{
-		{0.0f, 0.5f, {1.0f, 0.0f, 1.0f}},
+		{0.0f, 1.0f, {1.0f, 0.0f, 1.0f}},
 		{0.5f, -0.5f, {0.0f, 1.0f, 1.0f}},
 		{-0.5f, -0.5f, {1.0f, 1.0f, 0.0f}},
 		{0.7f, 0.0f, {1.0f, 1.0f, 0.0f}},
@@ -136,19 +154,17 @@ void Graphics::DrawTestTriangle(float angle)
 
 	struct ConstantBuffer
 	{
-		struct
-		{
-			float element[4][4];
-		} transformation;
+		dx::XMMATRIX transformation;
 	};
 
 	const ConstantBuffer cb = 
 	{
 		{
-			std::cos(angle), std::sin(angle), 0, 0,
-			-std::sin(angle), std::cos(angle), 0, 0,
-			0, 0, 1, 0,
-			0, 0, 0, 1,
+			dx::XMMatrixTranspose(
+				dx::XMMatrixRotationZ(angle)
+				* dx::XMMatrixScaling(1.0f / aspect, 1, 1)
+				* dx::XMMatrixTranslation(xOffset, yOffset, 0)
+			)
 		}
 	};
 
@@ -189,12 +205,6 @@ void Graphics::DrawTestTriangle(float angle)
 		blob->GetBufferSize(),
 		&inputLayout
 	));
-
-	D3D11_VIEWPORT vp = { 0 };
-	vp.Width = 640;
-	vp.Height = 480;
-	vp.MaxDepth = 1;
-	context->RSSetViewports(1, &vp);
 
 	context->IASetInputLayout(inputLayout.Get());
 	context->OMSetRenderTargets(1, targetView.GetAddressOf(), nullptr);

@@ -34,17 +34,21 @@ public:
 	Graphics& operator=(const Graphics&) = delete;
 	void EndFrame();
 	void ClearBuffer(float red, float green, float blue) noexcept;
-
-	void DrawTestTriangle(float angle);
+	void HandleWindowResize();
+	void DrawTestTriangle(float angle, float xOffset, float yOffset);
 
 private:
 	Microsoft::WRL::ComPtr<ID3D11Device> device;
 	Microsoft::WRL::ComPtr<IDXGISwapChain> swapChain;
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> targetView;
+	HWND hWnd;
+	uint16_t width, height;
+	float aspect;
 #ifndef NDEBUG
 	DxgiInfoManager infoManager;
 #endif
+
 };
 
 #define GFX_EXCEPT_NOINFO(hr) Graphics::Exception(__FILE__, __LINE__, (hr))

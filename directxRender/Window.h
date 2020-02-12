@@ -49,6 +49,8 @@ public:
 	Window(const Window&) = delete;
 	Window& operator=(const Window&) = delete;
 	void SetTitle(const std::string& title);
+	int GetWidth() const noexcept;
+	int GetHeight() const noexcept;
 	std::optional<int> ProcessMessages();
 
 	Keyboard keyboard;

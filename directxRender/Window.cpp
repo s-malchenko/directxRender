@@ -84,6 +84,16 @@ void Window::SetTitle(const std::string& title)
 	}
 }
 
+int Window::GetWidth() const noexcept
+{
+	return width;
+}
+
+int Window::GetHeight() const noexcept
+{
+	return height;
+}
+
 std::optional<int> Window::ProcessMessages()
 {
 	MSG msg;

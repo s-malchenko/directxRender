@@ -5,7 +5,7 @@
 #include <sstream>
 #include <iomanip>
 
-Application::Application() : window("DX render window")
+Application::Application() : window("DX render window", 800, 500)
 {
 }
 
@@ -34,6 +34,7 @@ void Application::ProceedFrame()
 	float green = (std::cos(time * 1.3f) + 1) / 2;
 	float blue = (std::cos(time * 0.7f) + 1) / 2;
 	window.Gfx().ClearBuffer(red, green, blue);
-	window.Gfx().DrawTestTriangle(time);
+	auto cursor = window.mouse.GetPosition();
+	window.Gfx().DrawTestTriangle(time, cursor.x * 2.0f / window.GetWidth() - 1, 1 - cursor.y * 2.0f / window.GetHeight());
 	window.Gfx().EndFrame();
 }
