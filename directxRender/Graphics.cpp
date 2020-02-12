@@ -92,7 +92,7 @@ void Graphics::HandleWindowResize()
 	context->RSSetViewports(1, &vp);
 }
 
-void Graphics::DrawTestTriangle(float angle, float xOffset, float yOffset)
+void Graphics::DrawTestCube(float angle, float xOffset, float yOffset)
 {
 	namespace wrl = Microsoft::WRL;
 
@@ -107,17 +107,20 @@ void Graphics::DrawTestTriangle(float angle, float xOffset, float yOffset)
 	{
 		float x;
 		float y;
+		float z;
 		Color color;
 	};
 
 	const Vertex vertices[] =
 	{
-		{0.0f, 1.0f, {1.0f, 0.0f, 1.0f}},
-		{0.5f, -0.5f, {0.0f, 1.0f, 1.0f}},
-		{-0.5f, -0.5f, {1.0f, 1.0f, 0.0f}},
-		{0.7f, 0.0f, {1.0f, 1.0f, 0.0f}},
-		{0.0f, -0.7f, {1.0f, 0.0f, 1.0f}},
-		{-0.7f, 0.0f, {0.0f, 1.0f, 1.0f}},
+		{-0.5f,  0.5f, 0, {1.0f, 0.0f, 1.0f}},
+		{ 0.5f,  0.5f, 0, {0.0f, 1.0f, 1.0f}},
+		{ 0.5f, -0.5f, 0, {1.0f, 1.0f, 0.0f}},
+		{-0.5f, -0.5f, 0, {1.0f, 1.0f, 0.0f}},
+		{-0.5f,  0.5f, 1, {0.0f, 1.0f, 1.0f}},
+		{ 0.5f,  0.5f, 1, {1.0f, 1.0f, 0.0f}},
+		{ 0.5f, -0.5f, 1, {1.0f, 1.0f, 0.0f}},
+		{-0.5f, -0.5f, 1, {1.0f, 0.0f, 1.0f}},
 	};
 
 	D3D11_BUFFER_DESC desc = {};
@@ -136,9 +139,17 @@ void Graphics::DrawTestTriangle(float angle, float xOffset, float yOffset)
 	const uint16_t indices[] = 
 	{
 		0, 1, 2,
-		0, 3, 1,
-		1, 4, 2,
-		2, 5, 0,
+		2, 3, 0,
+		1, 5, 6,
+		6, 2, 1,
+		5, 4, 7,
+		7, 6, 5,
+		4, 0, 3,
+		3, 7, 4,
+		4, 5, 1,
+		1, 0, 4,
+		3, 2, 6,
+		6, 7, 3,
 	};
 
 	D3D11_BUFFER_DESC idesc = {};
@@ -161,9 +172,9 @@ void Graphics::DrawTestTriangle(float angle, float xOffset, float yOffset)
 	{
 		{
 			dx::XMMatrixTranspose(
-				dx::XMMatrixRotationZ(angle)
-				* dx::XMMatrixScaling(1.0f / aspect, 1, 1)
-				* dx::XMMatrixTranslation(xOffset, yOffset, 0)
+				dx::XMMatrixRotationRollPitchYaw(angle, angle / 1.3f, angle * 1.3f)
+				* dx::XMMatrixTranslation(xOffset, yOffset, 4 + std::cos(angle))
+				* dx::XMMatrixPerspectiveFovLH(1, aspect, 1, 7)
 			)
 		}
 	};
@@ -195,7 +206,7 @@ void Graphics::DrawTestTriangle(float angle, float xOffset, float yOffset)
 	wrl::ComPtr<ID3D11InputLayout> inputLayout;
 	const D3D11_INPUT_ELEMENT_DESC elementDesc[] = 
 	{
-		{ "Position", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "Position", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "Color", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 	GFX_THROW_INFO(device->CreateInputLayout(

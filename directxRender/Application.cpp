@@ -35,6 +35,6 @@ void Application::ProceedFrame()
 	float blue = (std::cos(time * 0.7f) + 1) / 2;
 	window.Gfx().ClearBuffer(red, green, blue);
 	auto cursor = window.mouse.GetPosition();
-	window.Gfx().DrawTestTriangle(time, cursor.x * 2.0f / window.GetWidth() - 1, 1 - cursor.y * 2.0f / window.GetHeight());
+	window.Gfx().DrawTestCube(time, cursor.x * 2.0f / window.GetWidth() - 1, 1 - cursor.y * 2.0f / window.GetHeight());
 	window.Gfx().EndFrame();
 }
