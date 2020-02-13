@@ -75,6 +75,7 @@ void Graphics::ClearBuffer(float red, float green, float blue) noexcept
 {
 	const float color[] = { red, green, blue, 1 };
 	context->ClearRenderTargetView(targetView.Get(), color);
+	context->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1, 0);
 }
 
 void Graphics::HandleWindowResize()
@@ -90,9 +91,38 @@ void Graphics::HandleWindowResize()
 	vp.Height = height;
 	vp.MaxDepth = 1;
 	context->RSSetViewports(1, &vp);
+
+	D3D11_DEPTH_STENCIL_DESC ds = {};
+	ds.DepthEnable = true;
+	ds.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	ds.DepthFunc = D3D11_COMPARISON_LESS;
+	wrl::ComPtr<ID3D11DepthStencilState> dsState;
+	GFX_THROW_INFO(device->CreateDepthStencilState(&ds, &dsState));
+	context->OMSetDepthStencilState(dsState.Get(), 1);
+
+	wrl::ComPtr<ID3D11Texture2D> zBuffer;
+	D3D11_TEXTURE2D_DESC textureDesc = {};
+	textureDesc.Width = width;
+	textureDesc.Height = height;
+	textureDesc.MipLevels = 1;
+	textureDesc.ArraySize = 1;
+	textureDesc.Format = DXGI_FORMAT_D32_FLOAT;
+	textureDesc.SampleDesc.Count = 1;
+	textureDesc.SampleDesc.Quality = 0;
+	textureDesc.Usage = D3D11_USAGE_DEFAULT;
+	textureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	GFX_THROW_INFO(device->CreateTexture2D(&textureDesc, nullptr, &zBuffer));
+
+	D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
+	dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;
+	dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	dsvDesc.Texture2D.MipSlice = 0;
+	GFX_THROW_INFO(device->CreateDepthStencilView(zBuffer.Get(), &dsvDesc, &depthStencilView));
+
+	context->OMSetRenderTargets(1, targetView.GetAddressOf(), depthStencilView.Get());
 }
 
-void Graphics::DrawTestCube(float angle, float xOffset, float yOffset)
+void Graphics::DrawTestCube(float angle, float xOffset, float zOffset)
 {
 	namespace wrl = Microsoft::WRL;
 
@@ -101,6 +131,7 @@ void Graphics::DrawTestCube(float angle, float xOffset, float yOffset)
 		float r;
 		float g;
 		float b;
+		float a;
 	};
 
 	struct Vertex
@@ -108,19 +139,18 @@ void Graphics::DrawTestCube(float angle, float xOffset, float yOffset)
 		float x;
 		float y;
 		float z;
-		Color color;
 	};
 
 	const Vertex vertices[] =
 	{
-		{-0.5f,  0.5f, 0, {1.0f, 0.0f, 1.0f}},
-		{ 0.5f,  0.5f, 0, {0.0f, 1.0f, 1.0f}},
-		{ 0.5f, -0.5f, 0, {1.0f, 1.0f, 0.0f}},
-		{-0.5f, -0.5f, 0, {1.0f, 1.0f, 0.0f}},
-		{-0.5f,  0.5f, 1, {0.0f, 1.0f, 1.0f}},
-		{ 0.5f,  0.5f, 1, {1.0f, 1.0f, 0.0f}},
-		{ 0.5f, -0.5f, 1, {1.0f, 1.0f, 0.0f}},
-		{-0.5f, -0.5f, 1, {1.0f, 0.0f, 1.0f}},
+		{-0.5f,  0.5f, -0.5f},
+		{ 0.5f,  0.5f, -0.5f},
+		{ 0.5f, -0.5f, -0.5f},
+		{-0.5f, -0.5f, -0.5f},
+		{-0.5f,  0.5f, 0.5f},
+		{ 0.5f,  0.5f, 0.5f},
+		{ 0.5f, -0.5f, 0.5f},
+		{-0.5f, -0.5f, 0.5f},
 	};
 
 	D3D11_BUFFER_DESC desc = {};
@@ -173,7 +203,7 @@ void Graphics::DrawTestCube(float angle, float xOffset, float yOffset)
 		{
 			dx::XMMatrixTranspose(
 				dx::XMMatrixRotationRollPitchYaw(angle, angle / 1.3f, angle * 1.3f)
-				* dx::XMMatrixTranslation(xOffset, yOffset, 4 + std::cos(angle))
+				* dx::XMMatrixTranslation(xOffset, 0, 4 + zOffset)
 				* dx::XMMatrixPerspectiveFovLH(1, aspect, 1, 7)
 			)
 		}
@@ -191,6 +221,28 @@ void Graphics::DrawTestCube(float angle, float xOffset, float yOffset)
 	GFX_THROW_INFO(device->CreateBuffer(&cdesc, &csd, &constantBuffer));
 	context->VSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
 
+	const Color faceColors[] =
+	{
+		{1.0f, 0.0f, 1.0f, 1.0f},
+		{0.0f, 1.0f, 1.0f, 1.0f},
+		{1.0f, 1.0f, 0.0f, 1.0f},
+		{1.0f, 0.0f, 0.0f, 1.0f},
+		{0.0f, 1.0f, 0.0f, 1.0f},
+		{0.0f, 0.0f, 1.0f, 1.0f},
+	};
+
+	cdesc = {};
+	cdesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	cdesc.Usage = D3D11_USAGE_DYNAMIC;
+	cdesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	cdesc.ByteWidth = sizeof(faceColors);
+	cdesc.StructureByteStride = 0;
+	csd = {};
+	csd.pSysMem = faceColors;
+	wrl::ComPtr<ID3D11Buffer> constantBufferColors;
+	GFX_THROW_INFO(device->CreateBuffer(&cdesc, &csd, &constantBufferColors));
+	context->PSSetConstantBuffers(0, 1, constantBufferColors.GetAddressOf());
+
 	wrl::ComPtr<ID3DBlob> blob;
 	wrl::ComPtr<ID3D11PixelShader> pShader;
 	GFX_THROW_INFO(D3DReadFileToBlob(L"PixelShader.cso", &blob));
@@ -207,7 +259,6 @@ void Graphics::DrawTestCube(float angle, float xOffset, float yOffset)
 	const D3D11_INPUT_ELEMENT_DESC elementDesc[] = 
 	{
 		{ "Position", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "Color", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 	GFX_THROW_INFO(device->CreateInputLayout(
 		elementDesc,
@@ -218,7 +269,6 @@ void Graphics::DrawTestCube(float angle, float xOffset, float yOffset)
 	));
 
 	context->IASetInputLayout(inputLayout.Get());
-	context->OMSetRenderTargets(1, targetView.GetAddressOf(), nullptr);
 	context->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	GFX_THROW_INFO_VOID(context->DrawIndexed(static_cast<unsigned int>(std::size(indices)), 0, 0));

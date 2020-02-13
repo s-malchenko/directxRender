@@ -35,13 +35,14 @@ public:
 	void EndFrame();
 	void ClearBuffer(float red, float green, float blue) noexcept;
 	void HandleWindowResize();
-	void DrawTestCube(float angle, float xOffset, float yOffset);
+	void DrawTestCube(float angle, float xOffset, float zOffset);
 
 private:
 	Microsoft::WRL::ComPtr<ID3D11Device> device;
 	Microsoft::WRL::ComPtr<IDXGISwapChain> swapChain;
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> targetView;
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> depthStencilView;
 	HWND hWnd;
 	uint16_t width, height;
 	float aspect;

@@ -28,13 +28,14 @@ void Application::ProceedFrame()
 	static Timer timer;
 	std::ostringstream ss;
 	const auto time = timer.Peek();
-	ss << "Time passed " << std::setprecision(1) << std::fixed << time << "s";
-	window.SetTitle(ss.str().c_str());
 	float red = (std::sin(time) + 1) / 2;
 	float green = (std::cos(time * 1.3f) + 1) / 2;
 	float blue = (std::cos(time * 0.7f) + 1) / 2;
 	window.Gfx().ClearBuffer(red, green, blue);
 	auto cursor = window.mouse.GetPosition();
-	window.Gfx().DrawTestCube(time, cursor.x * 2.0f / window.GetWidth() - 1, 1 - cursor.y * 2.0f / window.GetHeight());
+	ss << "Cursor at " << cursor.x << ":" << cursor.y;
+	window.SetTitle(ss.str().c_str());
+	window.Gfx().DrawTestCube(time, 0, 0);
+	window.Gfx().DrawTestCube(-time, 0, 1 - cursor.y * 2.0f / window.GetHeight());
 	window.Gfx().EndFrame();
 }
