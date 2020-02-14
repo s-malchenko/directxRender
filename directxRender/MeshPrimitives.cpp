@@ -16,7 +16,7 @@ namespace
 
 		for (uint16_t i = 0; i < baseVerticesCount; ++i)
 		{
-			result.push_back(halfUnitCircleXYVertex(2 * M_PI / baseVerticesCount * i));
+			result.push_back(halfUnitCircleXYVertex(2 * (float)M_PI / baseVerticesCount * i));
 		}
 
 		return result;
@@ -107,6 +107,24 @@ namespace MeshPrimitives
 			0, 4, 1,
 			1, 4, 2,
 			2, 4, 3,
+		}
+	};
+
+	const MeshPrimitive OriginPlane =
+	{
+		// vertices
+		{
+			{ 10,  10, 0},
+			{ 10, -10, 0},
+			{-10, -10, 0},
+			{-10,  10, 0},
+		},
+		// indices
+		{
+			0, 1, 2,
+			2, 3, 0,
+			0, 2, 1,
+			2, 0, 3,
 		}
 	};
 }

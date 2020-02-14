@@ -144,6 +144,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
+    <ClCompile Include="PerspectiveCamera.cpp" />
     <ClCompile Include="DxgiInfoManager.cpp" />
     <ClCompile Include="ExtendedException.cpp" />
     <ClCompile Include="Graphics.cpp" />
@@ -158,6 +159,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h" />
+    <ClInclude Include="PerspectiveCamera.h" />
     <ClInclude Include="DxgiInfoManager.h" />
     <ClInclude Include="EasyWin.h" />
     <ClInclude Include="ExtendedException.h" />

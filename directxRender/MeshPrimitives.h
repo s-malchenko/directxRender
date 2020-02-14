@@ -20,4 +20,5 @@ namespace MeshPrimitives
 	extern const MeshPrimitive Cube;
 	extern const MeshPrimitive Cone;
 	extern const MeshPrimitive Pyramid;
+	extern const MeshPrimitive OriginPlane;
 }

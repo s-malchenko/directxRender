@@ -4,7 +4,9 @@
 #include "DxgiInfoManager.h"
 #include "HrException.h"
 #include "MeshPrimitives.h"
+#include "PerspectiveCamera.h"
 #include <d3d11.h>
+#include <memory>
 #include <string>
 #include <vector>
 #include <wrl.h>
@@ -37,6 +39,7 @@ public:
 	void ClearBuffer(float red, float green, float blue) noexcept;
 	void HandleWindowResize();
 	void DrawPrimitiveMesh(const MeshPrimitive& mesh, float angle, float xOffset, float zOffset);
+	PerspectiveCamera& Camera();
 
 private:
 	Microsoft::WRL::ComPtr<ID3D11Device> device;
@@ -45,8 +48,8 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> targetView;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> depthStencilView;
 	HWND hWnd;
+	std::unique_ptr<PerspectiveCamera> pCam;
 	uint16_t width, height;
-	float aspect;
 #ifndef NDEBUG
 	DxgiInfoManager infoManager;
 #endif

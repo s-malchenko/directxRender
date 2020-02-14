@@ -51,6 +51,7 @@ Graphics::Graphics(HWND hWnd) : hWnd(hWnd)
 	wrl::ComPtr<ID3D11Resource> backBuffer;
 	GFX_THROW_INFO(swapChain->GetBuffer(0, __uuidof(ID3D11Resource), &backBuffer));
 	GFX_THROW_INFO(device->CreateRenderTargetView(backBuffer.Get(), nullptr, &targetView));
+	pCam = std::make_unique<PerspectiveCamera>(1.57f, 1.0f);
 	HandleWindowResize();
 }
 
@@ -84,7 +85,7 @@ void Graphics::HandleWindowResize()
 	GetClientRect(hWnd, &rect);
 	width = static_cast<uint16_t>(rect.right - rect.left);
 	height = static_cast<uint16_t>(rect.bottom - rect.top);
-	aspect = width * 1.0f / height;
+	Camera().SetAspect(1.0f * width / height);
 
 	D3D11_VIEWPORT vp = { 0 };
 	vp.Width = width;
@@ -142,7 +143,7 @@ void Graphics::DrawPrimitiveMesh(const MeshPrimitive& mesh, float angle, float x
 	D3D11_BUFFER_DESC desc = {};
 	desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	desc.Usage = D3D11_USAGE_DEFAULT;
-	desc.ByteWidth = sizeof(vertices[0]) * vertices.size();
+	desc.ByteWidth = (UINT)(sizeof(vertices[0]) * vertices.size());
 	desc.StructureByteStride = sizeof(vertices[0]);
 	D3D11_SUBRESOURCE_DATA sd = {};
 	sd.pSysMem = vertices.data();
@@ -155,7 +156,7 @@ void Graphics::DrawPrimitiveMesh(const MeshPrimitive& mesh, float angle, float x
 	D3D11_BUFFER_DESC idesc = {};
 	idesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	idesc.Usage = D3D11_USAGE_DEFAULT;
-	idesc.ByteWidth = sizeof(indices[0]) * indices.size();
+	idesc.ByteWidth = (UINT)(sizeof(indices[0]) * indices.size());
 	idesc.StructureByteStride = sizeof(indices[0]);
 	D3D11_SUBRESOURCE_DATA isd = {};
 	isd.pSysMem = indices.data();
@@ -173,8 +174,8 @@ void Graphics::DrawPrimitiveMesh(const MeshPrimitive& mesh, float angle, float x
 		{
 			dx::XMMatrixTranspose(
 				dx::XMMatrixRotationRollPitchYaw(angle, angle / 1.3f, angle * 1.3f)
-				* dx::XMMatrixTranslation(xOffset, 0, 4 + zOffset)
-				* dx::XMMatrixPerspectiveFovLH(1, aspect, 1, 7)
+				* dx::XMMatrixTranslation(xOffset, 0, zOffset)
+				* Camera().GetPerspectiveViewTransform()
 			)
 		}
 	};
@@ -242,6 +243,16 @@ void Graphics::DrawPrimitiveMesh(const MeshPrimitive& mesh, float angle, float x
 	context->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	GFX_THROW_INFO_VOID(context->DrawIndexed(static_cast<unsigned int>(std::size(indices)), 0, 0));
+}
+
+PerspectiveCamera & Graphics::Camera()
+{
+	if (!pCam)
+	{
+		throw GFX_EXCEPT_NOINFO(E_FAIL);
+	}
+
+	return *pCam;
 }
 
 Graphics::Exception::Exception(const char* file, int line, HRESULT hr, const std::vector<std::string>& messages)
