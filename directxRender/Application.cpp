@@ -19,7 +19,6 @@ int Application::Run()
 		}
 
 		ProceedFrame();
-		Util::SleepMs(10);
 	}
 }
 
@@ -35,7 +34,7 @@ void Application::ProceedFrame()
 	auto cursor = window.mouse.GetPosition();
 	ss << "Cursor at " << cursor.x << ":" << cursor.y;
 	window.SetTitle(ss.str().c_str());
-	window.Gfx().DrawTestCube(time, 0, 0);
-	window.Gfx().DrawTestCube(-time, 0, 1 - cursor.y * 2.0f / window.GetHeight());
+	window.Gfx().DrawPrimitiveMesh(MeshPrimitives::Cube, 0, 0, 0);
+	window.Gfx().DrawPrimitiveMesh(MeshPrimitives::Cone, -time, 0, 0.5f * std::sin(time * 2));
 	window.Gfx().EndFrame();
 }

@@ -3,6 +3,7 @@
 #include "EasyWin.h"
 #include "DxgiInfoManager.h"
 #include "HrException.h"
+#include "MeshPrimitives.h"
 #include <d3d11.h>
 #include <string>
 #include <vector>
@@ -35,7 +36,7 @@ public:
 	void EndFrame();
 	void ClearBuffer(float red, float green, float blue) noexcept;
 	void HandleWindowResize();
-	void DrawTestCube(float angle, float xOffset, float zOffset);
+	void DrawPrimitiveMesh(const MeshPrimitive& mesh, float angle, float xOffset, float zOffset);
 
 private:
 	Microsoft::WRL::ComPtr<ID3D11Device> device;

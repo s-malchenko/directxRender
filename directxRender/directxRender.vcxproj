@@ -149,6 +149,7 @@
     <ClCompile Include="Graphics.cpp" />
     <ClCompile Include="HrException.cpp" />
     <ClCompile Include="Keyboard.cpp" />
+    <ClCompile Include="MeshPrimitives.cpp" />
     <ClCompile Include="Mouse.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="Util.cpp" />
@@ -163,6 +164,7 @@
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="HrException.h" />
     <ClInclude Include="Keyboard.h" />
+    <ClInclude Include="MeshPrimitives.h" />
     <ClInclude Include="Mouse.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Timer.h" />

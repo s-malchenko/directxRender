@@ -122,7 +122,7 @@ void Graphics::HandleWindowResize()
 	context->OMSetRenderTargets(1, targetView.GetAddressOf(), depthStencilView.Get());
 }
 
-void Graphics::DrawTestCube(float angle, float xOffset, float zOffset)
+void Graphics::DrawPrimitiveMesh(const MeshPrimitive& mesh, float angle, float xOffset, float zOffset)
 {
 	namespace wrl = Microsoft::WRL;
 
@@ -134,61 +134,31 @@ void Graphics::DrawTestCube(float angle, float xOffset, float zOffset)
 		float a;
 	};
 
-	struct Vertex
-	{
-		float x;
-		float y;
-		float z;
-	};
-
-	const Vertex vertices[] =
-	{
-		{-0.5f,  0.5f, -0.5f},
-		{ 0.5f,  0.5f, -0.5f},
-		{ 0.5f, -0.5f, -0.5f},
-		{-0.5f, -0.5f, -0.5f},
-		{-0.5f,  0.5f, 0.5f},
-		{ 0.5f,  0.5f, 0.5f},
-		{ 0.5f, -0.5f, 0.5f},
-		{-0.5f, -0.5f, 0.5f},
-	};
+	const auto& vertices = mesh.vertices;
+	const auto& indices = mesh.indices;
+	assert(!vertices.empty());
+	assert(!indices.empty());
 
 	D3D11_BUFFER_DESC desc = {};
 	desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	desc.Usage = D3D11_USAGE_DEFAULT;
-	desc.ByteWidth = sizeof(vertices);
-	desc.StructureByteStride = sizeof(Vertex);
+	desc.ByteWidth = sizeof(vertices[0]) * vertices.size();
+	desc.StructureByteStride = sizeof(vertices[0]);
 	D3D11_SUBRESOURCE_DATA sd = {};
-	sd.pSysMem = vertices;
+	sd.pSysMem = vertices.data();
 	wrl::ComPtr<ID3D11Buffer> vertexBuffer;
 	GFX_THROW_INFO(device->CreateBuffer(&desc, &sd, &vertexBuffer));
-	const UINT stride = sizeof(Vertex);
+	const UINT stride = sizeof(vertices[0]);
 	const UINT offset = 0;
 	context->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
-
-	const uint16_t indices[] = 
-	{
-		0, 1, 2,
-		2, 3, 0,
-		1, 5, 6,
-		6, 2, 1,
-		5, 4, 7,
-		7, 6, 5,
-		4, 0, 3,
-		3, 7, 4,
-		4, 5, 1,
-		1, 0, 4,
-		3, 2, 6,
-		6, 7, 3,
-	};
 
 	D3D11_BUFFER_DESC idesc = {};
 	idesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	idesc.Usage = D3D11_USAGE_DEFAULT;
-	idesc.ByteWidth = sizeof(indices);
-	idesc.StructureByteStride = sizeof(uint16_t);
+	idesc.ByteWidth = sizeof(indices[0]) * indices.size();
+	idesc.StructureByteStride = sizeof(indices[0]);
 	D3D11_SUBRESOURCE_DATA isd = {};
-	isd.pSysMem = indices;
+	isd.pSysMem = indices.data();
 	wrl::ComPtr<ID3D11Buffer> indexBuffer;
 	GFX_THROW_INFO(device->CreateBuffer(&idesc, &isd, &indexBuffer));
 	context->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
