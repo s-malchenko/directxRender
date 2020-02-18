@@ -20,8 +20,21 @@ void PerspectiveCamera::SetAspect(float newAspect) noexcept
 	aspect = newAspect;
 }
 
+void PerspectiveCamera::SetSpeed(float newSpeed) noexcept
+{
+	speed = newSpeed;
+}
+
+void PerspectiveCamera::MultiplySpeed(float speedMul) noexcept
+{
+	speed *= speedMul;
+}
+
 void PerspectiveCamera::Move(float forward, float side, float up) noexcept
 {
+	forward *= speed;
+	side *= speed;
+	up *= speed;
 	worldTransform *= XMMatrixTranslation(-side, 0, -forward);
 
 	XMVECTOR worldZ = { 0, std::cos(pitch), std::sin(pitch) };
@@ -37,6 +50,11 @@ void PerspectiveCamera::Turn(float dPitch, float dYaw) noexcept
 
 	XMVECTOR worldZ = { 0, std::cos(pitch), std::sin(pitch) };
 	worldTransform *= XMMatrixRotationAxis(worldZ, -dYaw);
+}
+
+float PerspectiveCamera::GetSpeed() const noexcept
+{
+	return speed;
 }
 
 XMMATRIX PerspectiveCamera::GetPerspectiveViewTransform() const

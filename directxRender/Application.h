@@ -9,6 +9,7 @@ public:
 	int Run();
 private:
 	void ProceedFrame();
+	void HandleInputs(float deltaTime);
 	Window window;
 };
 

@@ -225,6 +225,7 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 		break;
 	case WM_KEYUP:
+	case WM_SYSKEYUP:
 		keyboard.OnKeyReleased(static_cast<uint8_t>(wParam));
 		break;
 	case WM_CHAR:

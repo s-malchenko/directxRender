@@ -70,7 +70,7 @@ void Keyboard::OnKeyPressed(uint8_t keyCode)
 void Keyboard::OnKeyReleased(uint8_t keyCode)
 {
 	keyStates[keyCode] = false;
-	keyBuffer.emplace(Event::Type::Press, keyCode);
+	keyBuffer.emplace(Event::Type::Release, keyCode);
 	Trim(keyBuffer, bufferSize);
 }
 
