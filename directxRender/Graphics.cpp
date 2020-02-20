@@ -15,12 +15,6 @@ namespace dx = DirectX;
 Graphics::Graphics(HWND hWnd) : hWnd(hWnd)
 {
 	CreateDeviceAndContext();
-	CreateSwapChain();
-
-	// get access to texture subresource of swap chain
-	wrl::ComPtr<ID3D11Resource> backBuffer;
-	GFX_THROW_INFO(swapChain->GetBuffer(0, __uuidof(ID3D11Resource), &backBuffer));
-	GFX_THROW_INFO(device->CreateRenderTargetView(backBuffer.Get(), nullptr, &targetView));
 	pCam = std::make_unique<PerspectiveCamera>(1.57f, 1.0f);
 	HandleWindowResize();
 }
@@ -45,7 +39,7 @@ void Graphics::EndFrame()
 void Graphics::ClearBuffer(float red, float green, float blue) noexcept
 {
 	const float color[] = { red, green, blue, 1 };
-	context->ClearRenderTargetView(targetView.Get(), color);
+	context->ClearRenderTargetView(renderTargetView.Get(), color);
 	context->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1, 0);
 }
 
@@ -56,6 +50,9 @@ void Graphics::HandleWindowResize()
 	width = static_cast<uint16_t>(rect.right - rect.left);
 	height = static_cast<uint16_t>(rect.bottom - rect.top);
 	Camera().SetAspect(1.0f * width / height);
+
+	CreateSwapChain();
+	CreateRenderTargetView();
 
 	D3D11_VIEWPORT vp = { 0 };
 	vp.Width = width;
@@ -90,7 +87,7 @@ void Graphics::HandleWindowResize()
 	dsvDesc.Texture2D.MipSlice = 0;
 	GFX_THROW_INFO(device->CreateDepthStencilView(zBuffer.Get(), &dsvDesc, &depthStencilView));
 
-	context->OMSetRenderTargets(1, targetView.GetAddressOf(), depthStencilView.Get());
+	context->OMSetRenderTargets(1, renderTargetView.GetAddressOf(), depthStencilView.Get());
 }
 
 void Graphics::DrawPrimitiveMesh(const MeshPrimitive& mesh, float angle, float xOffset, float zOffset)
@@ -275,6 +272,13 @@ void Graphics::CreateSwapChain()
 	GFX_THROW_INFO(adapter->GetParent(__uuidof(IDXGIFactory), &factory));
 
 	GFX_THROW_INFO(factory->CreateSwapChain(device.Get(), &sd, &swapChain));
+}
+
+void Graphics::CreateRenderTargetView()
+{
+	wrl::ComPtr<ID3D11Resource> backBuffer;
+	GFX_THROW_INFO(swapChain->GetBuffer(0, __uuidof(ID3D11Resource), &backBuffer));
+	GFX_THROW_INFO(device->CreateRenderTargetView(backBuffer.Get(), nullptr, &renderTargetView));
 }
 
 Graphics::Exception::Exception(const char* file, int line, HRESULT hr, const std::vector<std::string>& messages)

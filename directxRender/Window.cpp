@@ -41,7 +41,7 @@ Window::Window(const char* name, int width, int height) : width(width), height(h
 	RECT rect = { 100, 100, 100, 100 };
 	rect.right = rect.left + width;
 	rect.bottom = rect.top + height;
-	const DWORD style = WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU;
+	const DWORD style = WS_OVERLAPPEDWINDOW;
 	
 	if (!AdjustWindowRect(&rect, style, FALSE))
 	{
@@ -235,6 +235,9 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		// release all keys when lose focus
 		keyboard.ClearState();
 		break;
+	case WM_SIZE:
+		HandleResize(lParam);
+		break;
 	}
 
 	return DefWindowProc(hWnd, msg, wParam, lParam);
@@ -249,6 +252,18 @@ bool Window::PointsInside(LPARAM lParam) const noexcept
 		|| pos.y < 0
 		|| pos.y > height
 		);
+}
+
+void Window::HandleResize(LPARAM lParam) noexcept
+{
+	const auto newSize = MAKEPOINTS(lParam);
+	width = newSize.x;
+	height = newSize.y;
+
+	if (pGfx)
+	{
+		Gfx().HandleWindowResize();
+	}
 }
 
 const char * Window::Exception::GetType() const noexcept

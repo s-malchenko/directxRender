@@ -61,6 +61,7 @@ private:
 	static LRESULT CALLBACK DeliverMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	LRESULT CALLBACK HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	bool PointsInside(LPARAM lParam) const noexcept;
+	void HandleResize(LPARAM lParam) noexcept;
 
 	int width;
 	int height;

@@ -45,13 +45,14 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11Device> device;
 	Microsoft::WRL::ComPtr<IDXGISwapChain> swapChain;
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
-	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> targetView;
+	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderTargetView;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> depthStencilView;
 	HWND hWnd;
 	std::unique_ptr<PerspectiveCamera> pCam;
 	uint16_t width, height;
 	void CreateDeviceAndContext();
 	void CreateSwapChain();
+	void CreateRenderTargetView();
 #ifndef NDEBUG
 	DxgiInfoManager infoManager;
 #endif
