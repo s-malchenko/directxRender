@@ -1,5 +1,6 @@
 #include "Graphics.h"
 
+#include "GfxMacros.h"
 #include "Util.h"
 #include <d3dcompiler.h>
 #include <DirectXMath.h>
@@ -13,39 +14,8 @@ namespace dx = DirectX;
 
 Graphics::Graphics(HWND hWnd) : hWnd(hWnd)
 {
-	DXGI_SWAP_CHAIN_DESC sd = { 0 };
-	sd.BufferDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
-	sd.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
-	sd.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
-	sd.SampleDesc.Count = 1;
-	sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	sd.BufferCount = 1;
-	sd.OutputWindow = hWnd;
-	sd.Windowed = true;
-	sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-
-	UINT flags = 0;
-
-#ifndef NDEBUG
-	flags |= D3D11_CREATE_DEVICE_DEBUG;
-#endif
-
-	GFX_THROW_INFO(
-		D3D11CreateDeviceAndSwapChain(
-			nullptr,
-			D3D_DRIVER_TYPE_HARDWARE,
-			nullptr,
-			flags,
-			nullptr,
-			0,
-			D3D11_SDK_VERSION,
-			&sd,
-			&swapChain,
-			&device,
-			nullptr,
-			&context
-		)
-	);
+	CreateDeviceAndContext();
+	CreateSwapChain();
 
 	// get access to texture subresource of swap chain
 	wrl::ComPtr<ID3D11Resource> backBuffer;
@@ -249,10 +219,62 @@ PerspectiveCamera & Graphics::Camera()
 {
 	if (!pCam)
 	{
-		throw GFX_EXCEPT_NOINFO(E_FAIL);
+		throw EXT_EXCEPT("Gfx Camera not initialized!");
 	}
 
 	return *pCam;
+}
+
+void Graphics::CreateDeviceAndContext()
+{
+	UINT flags = 0;
+	D3D_FEATURE_LEVEL featureLevel;
+
+#ifndef NDEBUG
+	flags |= D3D11_CREATE_DEVICE_DEBUG;
+#endif
+
+	GFX_THROW_INFO(D3D11CreateDevice(
+		nullptr, // default adapter
+		D3D_DRIVER_TYPE_HARDWARE,
+		nullptr, // no software device
+		flags,
+		nullptr, 0, // default feature levels
+		D3D11_SDK_VERSION,
+		&device,
+		&featureLevel,
+		&context
+	));
+
+	if (featureLevel < D3D_FEATURE_LEVEL_11_0)
+	{
+		throw EXT_EXCEPT("DirectX 11 is not supported");
+	}
+}
+
+void Graphics::CreateSwapChain()
+{
+	DXGI_SWAP_CHAIN_DESC sd = {};
+
+	sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	sd.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+	sd.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
+	sd.SampleDesc.Count = 1;
+	sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	sd.BufferCount = 1;
+	sd.Windowed = true;
+	sd.OutputWindow = hWnd;
+	sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+
+	wrl::ComPtr<IDXGIDevice> dDevice;
+	wrl::ComPtr<IDXGIAdapter> adapter;
+	wrl::ComPtr<IDXGIFactory> factory;
+
+	GFX_THROW_INFO(device->QueryInterface(__uuidof(IDXGIDevice), &dDevice));
+	GFX_THROW_INFO(dDevice->GetParent(__uuidof(IDXGIAdapter), &adapter));
+	GFX_THROW_INFO(adapter->GetParent(__uuidof(IDXGIFactory), &factory));
+
+	GFX_THROW_INFO(factory->CreateSwapChain(device.Get(), &sd, &swapChain));
 }
 
 Graphics::Exception::Exception(const char* file, int line, HRESULT hr, const std::vector<std::string>& messages)

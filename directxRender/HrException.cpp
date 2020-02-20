@@ -2,7 +2,7 @@
 
 #include <sstream>
 
-HrException::HrException(const char * file, int line, HRESULT hr)
+HrException::HrException(const char* file, int line, HRESULT hr)
 	: ExtendedException(file, line), hr(hr)
 {
 }

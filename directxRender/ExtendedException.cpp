@@ -2,9 +2,13 @@
 
 #include <sstream>
 
-ExtendedException::ExtendedException(const char * file, int line)
+ExtendedException::ExtendedException(const char * file, int line, const char* desc)
 	: file(file), line(line)
 {
+	if (desc)
+	{
+		description = desc;
+	}
 }
 
 const char* ExtendedException::what() const
@@ -33,6 +37,12 @@ const std::string & ExtendedException::GetFile() const noexcept
 std::string ExtendedException::GetOriginString() const
 {
 	std::ostringstream ss;
+
+	if (!description.empty())
+	{
+		ss << description << std::endl;
+	}
+
 	ss << "[File]: " << GetFile() << std::endl
 		<< "[Line]: " << GetLine();
 	return ss.str();

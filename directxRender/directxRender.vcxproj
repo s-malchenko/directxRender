@@ -159,6 +159,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h" />
+    <ClInclude Include="GfxMacros.h" />
     <ClInclude Include="PerspectiveCamera.h" />
     <ClInclude Include="DxgiInfoManager.h" />
     <ClInclude Include="EasyWin.h" />
