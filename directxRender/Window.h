@@ -20,13 +20,6 @@ public:
 	public:
 		const char* GetType() const noexcept override;
 	};
-
-	class NoGfxException : public ExtendedException
-	{
-		using ExtendedException::ExtendedException;
-	public:
-		const char* GetType() const noexcept override;
-	};
 private:
 	// singleton for registration of window class
 	class WindowClass

@@ -116,7 +116,7 @@ Graphics & Window::Gfx()
 {
 	if (!pGfx)
 	{
-		throw Window::NoGfxException(__FILE__, __LINE__);
+		throw EXT_EXCEPT("Window Graphics not initialized");
 	}
 
 	return *pGfx;
@@ -269,9 +269,4 @@ void Window::HandleResize(LPARAM lParam) noexcept
 const char * Window::Exception::GetType() const noexcept
 {
 	return "Window Exception";
-}
-
-const char * Window::NoGfxException::GetType() const noexcept
-{
-	return "Window No Graphics Exception";
 }
