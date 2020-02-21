@@ -53,6 +53,7 @@ private:
 	void CreateDeviceAndContext();
 	void CreateSwapChain();
 	void CreateRenderTargetView();
+	void CreateDepthStencilView();
 #ifndef NDEBUG
 	DxgiInfoManager infoManager;
 #endif

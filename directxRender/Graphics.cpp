@@ -53,40 +53,13 @@ void Graphics::HandleWindowResize()
 
 	CreateSwapChain();
 	CreateRenderTargetView();
+	CreateDepthStencilView();
 
 	D3D11_VIEWPORT vp = { 0 };
 	vp.Width = width;
 	vp.Height = height;
 	vp.MaxDepth = 1;
 	context->RSSetViewports(1, &vp);
-
-	D3D11_DEPTH_STENCIL_DESC ds = {};
-	ds.DepthEnable = true;
-	ds.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-	ds.DepthFunc = D3D11_COMPARISON_LESS;
-	wrl::ComPtr<ID3D11DepthStencilState> dsState;
-	GFX_THROW_INFO(device->CreateDepthStencilState(&ds, &dsState));
-	context->OMSetDepthStencilState(dsState.Get(), 1);
-
-	wrl::ComPtr<ID3D11Texture2D> zBuffer;
-	D3D11_TEXTURE2D_DESC textureDesc = {};
-	textureDesc.Width = width;
-	textureDesc.Height = height;
-	textureDesc.MipLevels = 1;
-	textureDesc.ArraySize = 1;
-	textureDesc.Format = DXGI_FORMAT_D32_FLOAT;
-	textureDesc.SampleDesc.Count = 1;
-	textureDesc.SampleDesc.Quality = 0;
-	textureDesc.Usage = D3D11_USAGE_DEFAULT;
-	textureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-	GFX_THROW_INFO(device->CreateTexture2D(&textureDesc, nullptr, &zBuffer));
-
-	D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
-	dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;
-	dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-	dsvDesc.Texture2D.MipSlice = 0;
-	GFX_THROW_INFO(device->CreateDepthStencilView(zBuffer.Get(), &dsvDesc, &depthStencilView));
-
 	context->OMSetRenderTargets(1, renderTargetView.GetAddressOf(), depthStencilView.Get());
 }
 
@@ -279,6 +252,36 @@ void Graphics::CreateRenderTargetView()
 	wrl::ComPtr<ID3D11Resource> backBuffer;
 	GFX_THROW_INFO(swapChain->GetBuffer(0, __uuidof(ID3D11Resource), &backBuffer));
 	GFX_THROW_INFO(device->CreateRenderTargetView(backBuffer.Get(), nullptr, &renderTargetView));
+}
+
+void Graphics::CreateDepthStencilView()
+{
+	D3D11_DEPTH_STENCIL_DESC ds = {};
+	ds.DepthEnable = true;
+	ds.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	ds.DepthFunc = D3D11_COMPARISON_LESS;
+	wrl::ComPtr<ID3D11DepthStencilState> dsState;
+	GFX_THROW_INFO(device->CreateDepthStencilState(&ds, &dsState));
+	context->OMSetDepthStencilState(dsState.Get(), 1);
+
+	wrl::ComPtr<ID3D11Texture2D> zBuffer;
+	D3D11_TEXTURE2D_DESC textureDesc = {};
+	textureDesc.Width = width;
+	textureDesc.Height = height;
+	textureDesc.MipLevels = 1;
+	textureDesc.ArraySize = 1;
+	textureDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	textureDesc.SampleDesc.Count = 1;
+	textureDesc.SampleDesc.Quality = 0;
+	textureDesc.Usage = D3D11_USAGE_DEFAULT;
+	textureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	GFX_THROW_INFO(device->CreateTexture2D(&textureDesc, nullptr, &zBuffer));
+
+	D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
+	dsvDesc.Format = textureDesc.Format;
+	dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	dsvDesc.Texture2D.MipSlice = 0;
+	GFX_THROW_INFO(device->CreateDepthStencilView(zBuffer.Get(), &dsvDesc, &depthStencilView));
 }
 
 Graphics::Exception::Exception(const char* file, int line, HRESULT hr, const std::vector<std::string>& messages)
