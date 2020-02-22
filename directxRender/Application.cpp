@@ -1,6 +1,5 @@
 #include "Application.h"
 
-#include "Timer.h"
 #include "Util.h"
 #include <sstream>
 #include <iomanip>
@@ -11,6 +10,9 @@ Application::Application() : window("DX render window", 800, 500)
 
 int Application::Run()
 {
+	appTimer.Reset();
+	statTimer.Reset();
+
 	while (true)
 	{
 		if (const auto code = window.ProcessMessages())
@@ -24,30 +26,29 @@ int Application::Run()
 
 void Application::ProceedFrame()
 {
-	static Timer timer;
-	static Timer frameTimer;
-	
-	const auto time = timer.Peek();
-	const auto deltaTime = frameTimer.Mark();
+	appTimer.Tick();
+	statTimer.Tick();
+	const auto appTime = appTimer.GetPassedTime();
 
-	float red = (std::sin(time) + 1) / 2;
-	float green = (std::cos(time * 1.3f) + 1) / 2;
-	float blue = (std::cos(time * 0.7f) + 1) / 2;
+	float red = static_cast<float>(std::sin(appTime) + 1) / 2;
+	float green = static_cast<float>(std::cos(appTime * 1.3f) + 1) / 2;
+	float blue = static_cast<float>(std::cos(appTime * 0.7f) + 1) / 2;
 	window.Gfx().ClearBuffer(red, green, blue);
-	HandleInputs(deltaTime);
+	HandleInputs();
 	
 	window.Gfx().DrawPrimitiveMesh(MeshPrimitives::Cone, 0, 0, 0);
 	window.Gfx().DrawPrimitiveMesh(MeshPrimitives::OriginPlane, 0, 0, -0.5);
-	window.Gfx().DrawPrimitiveMesh(MeshPrimitives::Cube, -time, 0, 0.5f * std::sin(time * 2));
+	window.Gfx().DrawPrimitiveMesh(MeshPrimitives::Cube, -appTime, 0, 0.5f * std::sin(appTime * 2));
 	window.Gfx().EndFrame();
 }
 
-void Application::HandleInputs(float deltaTime)
+void Application::HandleInputs()
 {
+	const auto deltaTime = statTimer.Delta();
 	std::ostringstream ss;
 	static Mouse::Position prevCursor = {};
 	auto cursor = window.mouse.GetPosition();
-	ss << "Cursor at " << cursor.x << ":" << cursor.y;
+	ss << "FPS " << 1 / deltaTime;
 	window.SetTitle(ss.str().c_str());
 
 	float dPos[] = { 0, 0, 0 };
@@ -83,8 +84,14 @@ void Application::HandleInputs(float deltaTime)
 	{
 		auto event = window.keyboard.ReadKey();
 
-		if (event && event.Code() == VK_SHIFT)
+		if (!event)
 		{
+			continue;
+		}
+
+		switch (event.Code())
+		{
+		case VK_SHIFT:
 			if (event.IsPress())
 			{
 				window.Gfx().Camera().MultiplySpeed(2);
@@ -93,6 +100,20 @@ void Application::HandleInputs(float deltaTime)
 			{
 				window.Gfx().Camera().MultiplySpeed(0.5f);
 			}
+			break;
+		case 'F':
+			if(event.IsPress())
+			{
+				if (appTimer.Paused())
+				{
+					appTimer.Continue();
+				}
+				else
+				{
+					appTimer.Pause();
+				}
+			}
+			break;
 		}
 	}
 
