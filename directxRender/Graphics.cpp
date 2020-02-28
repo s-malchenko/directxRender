@@ -16,7 +16,11 @@ Graphics::Graphics(HWND hWnd) : hWnd(hWnd)
 {
 	CreateDeviceAndContext();
 	pCam = std::make_unique<PerspectiveCamera>(1.57f, 1.0f);
-	HandleWindowResize();
+	RenewSize();
+	CreateSwapChain();
+	CreateRenderTargetView();
+	CreateDepthStencilView();
+	SetViewport();
 }
 
 void Graphics::EndFrame()
@@ -45,22 +49,19 @@ void Graphics::ClearBuffer(float red, float green, float blue) noexcept
 
 void Graphics::HandleWindowResize()
 {
-	RECT rect;
-	GetClientRect(hWnd, &rect);
-	width = static_cast<uint16_t>(rect.right - rect.left);
-	height = static_cast<uint16_t>(rect.bottom - rect.top);
-	Camera().SetAspect(1.0f * width / height);
+	if (width == 0 || height == 0)
+	{
+		return;
+	}
 
-	CreateSwapChain();
+	RenewSize();
+	renderTargetView = nullptr;
+	zBuffer = nullptr;
+	depthStencilView = nullptr;
+	GFX_THROW_INFO(swapChain->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0));
 	CreateRenderTargetView();
 	CreateDepthStencilView();
-
-	D3D11_VIEWPORT vp = { 0 };
-	vp.Width = width;
-	vp.Height = height;
-	vp.MaxDepth = 1;
-	context->RSSetViewports(1, &vp);
-	context->OMSetRenderTargets(1, renderTargetView.GetAddressOf(), depthStencilView.Get());
+	SetViewport();
 }
 
 void Graphics::DrawPrimitiveMesh(const MeshPrimitive& mesh, float angle, float xOffset, float zOffset)
@@ -249,8 +250,10 @@ void Graphics::CreateSwapChain()
 
 void Graphics::CreateRenderTargetView()
 {
-	wrl::ComPtr<ID3D11Resource> backBuffer;
-	GFX_THROW_INFO(swapChain->GetBuffer(0, __uuidof(ID3D11Resource), &backBuffer));
+	wrl::ComPtr<ID3D11Texture2D> backBuffer;
+	GFX_THROW_INFO(swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), &backBuffer));
+	D3D11_TEXTURE2D_DESC bufferDesc;
+	backBuffer->GetDesc(&bufferDesc);
 	GFX_THROW_INFO(device->CreateRenderTargetView(backBuffer.Get(), nullptr, &renderTargetView));
 }
 
@@ -264,7 +267,6 @@ void Graphics::CreateDepthStencilView()
 	GFX_THROW_INFO(device->CreateDepthStencilState(&ds, &dsState));
 	context->OMSetDepthStencilState(dsState.Get(), 1);
 
-	wrl::ComPtr<ID3D11Texture2D> zBuffer;
 	D3D11_TEXTURE2D_DESC textureDesc = {};
 	textureDesc.Width = width;
 	textureDesc.Height = height;
@@ -282,6 +284,25 @@ void Graphics::CreateDepthStencilView()
 	dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 	dsvDesc.Texture2D.MipSlice = 0;
 	GFX_THROW_INFO(device->CreateDepthStencilView(zBuffer.Get(), &dsvDesc, &depthStencilView));
+}
+
+void Graphics::RenewSize()
+{
+	RECT rect;
+	GetClientRect(hWnd, &rect);
+	width = static_cast<uint16_t>(rect.right - rect.left);
+	height = static_cast<uint16_t>(rect.bottom - rect.top);
+	Camera().SetAspect(1.0f * width / height);
+}
+
+void Graphics::SetViewport()
+{
+	context->OMSetRenderTargets(1, renderTargetView.GetAddressOf(), depthStencilView.Get());
+	D3D11_VIEWPORT vp = { 0 };
+	vp.Width = width;
+	vp.Height = height;
+	vp.MaxDepth = 1;
+	context->RSSetViewports(1, &vp);
 }
 
 Graphics::Exception::Exception(const char* file, int line, HRESULT hr, const std::vector<std::string>& messages)

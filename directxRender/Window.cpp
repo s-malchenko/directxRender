@@ -112,7 +112,17 @@ std::optional<int> Window::ProcessMessages()
 	return {};
 }
 
-Graphics & Window::Gfx()
+Mouse& Window::GetMouse()
+{
+	return mouse;
+}
+
+Keyboard& Window::GetKeyboard()
+{
+	return keyboard;
+}
+
+Graphics& Window::Gfx()
 {
 	if (!pGfx)
 	{

@@ -12,7 +12,7 @@ private:
 	void ProceedFrame();
 	void HandleInputs();
 	Window window;
+	Timer worldTimer;
 	Timer appTimer;
-	Timer statTimer;
 };
 

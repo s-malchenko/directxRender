@@ -46,8 +46,8 @@ public:
 	int GetHeight() const noexcept;
 	std::optional<int> ProcessMessages();
 
-	Keyboard keyboard;
-	Mouse mouse;
+	Mouse& GetMouse();
+	Keyboard& GetKeyboard();
 	Graphics& Gfx();
 private:
 	static LRESULT CALLBACK HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -55,11 +55,14 @@ private:
 	LRESULT CALLBACK HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	bool PointsInside(LPARAM lParam) const noexcept;
 	void HandleResize(LPARAM lParam) noexcept;
+	Mouse mouse;
+	Keyboard keyboard;
 
 	int width;
 	int height;
 	HWND hWnd;
 	std::unique_ptr<Graphics> pGfx;
+	bool active = false;
 };
 
 //macro for capturing file and line to exception

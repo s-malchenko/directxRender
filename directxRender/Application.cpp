@@ -10,8 +10,8 @@ Application::Application() : window("DX render window", 800, 500)
 
 int Application::Run()
 {
+	worldTimer.Reset();
 	appTimer.Reset();
-	statTimer.Reset();
 
 	while (true)
 	{
@@ -26,9 +26,9 @@ int Application::Run()
 
 void Application::ProceedFrame()
 {
+	worldTimer.Tick();
 	appTimer.Tick();
-	statTimer.Tick();
-	const auto appTime = appTimer.GetPassedTime();
+	const auto appTime = worldTimer.GetPassedTime();
 
 	float red = static_cast<float>(std::sin(appTime) + 1) / 2;
 	float green = static_cast<float>(std::cos(appTime * 1.3f) + 1) / 2;
@@ -44,45 +44,47 @@ void Application::ProceedFrame()
 
 void Application::HandleInputs()
 {
-	const auto deltaTime = statTimer.Delta();
+	const auto deltaTime = appTimer.Delta();
+	auto& mouse = window.GetMouse();
+	auto& keyboard = window.GetKeyboard();
 	std::ostringstream ss;
 	static Mouse::Position prevCursor = {};
-	auto cursor = window.mouse.GetPosition();
+	auto cursor = mouse.GetPosition();
 	ss << "FPS " << 1 / deltaTime;
 	window.SetTitle(ss.str().c_str());
 
 	float dPos[] = { 0, 0, 0 };
 
-	if (window.keyboard.KeyPressed('W'))
+	if (keyboard.KeyPressed('W'))
 	{
 		dPos[0] = deltaTime;
 	}
-	else if (window.keyboard.KeyPressed('S'))
+	else if (keyboard.KeyPressed('S'))
 	{
 		dPos[0] = -deltaTime;
 	}
 
-	if (window.keyboard.KeyPressed('D'))
+	if (keyboard.KeyPressed('D'))
 	{
 		dPos[1] = deltaTime;
 	}
-	else if (window.keyboard.KeyPressed('A'))
+	else if (keyboard.KeyPressed('A'))
 	{
 		dPos[1] = -deltaTime;
 	}
 
-	if (window.keyboard.KeyPressed(' '))
+	if (keyboard.KeyPressed(' '))
 	{
 		dPos[2] = deltaTime;
 	}
-	else if (window.keyboard.KeyPressed('C'))
+	else if (keyboard.KeyPressed('C'))
 	{
 		dPos[2] = -deltaTime;
 	}
 
-	while (!window.keyboard.KeyEmpty())
+	while (!keyboard.KeyEmpty())
 	{
-		auto event = window.keyboard.ReadKey();
+		auto event = keyboard.ReadKey();
 
 		if (!event)
 		{
@@ -104,13 +106,13 @@ void Application::HandleInputs()
 		case 'F':
 			if(event.IsPress())
 			{
-				if (appTimer.Paused())
+				if (worldTimer.Paused())
 				{
-					appTimer.Continue();
+					worldTimer.Continue();
 				}
 				else
 				{
-					appTimer.Pause();
+					worldTimer.Pause();
 				}
 			}
 			break;
@@ -119,9 +121,9 @@ void Application::HandleInputs()
 
 	static constexpr float speedMultiplier = 1.2f;
 
-	while (!window.mouse.Empty())
+	while (!mouse.Empty())
 	{
-		auto event = window.mouse.Read();
+		auto event = mouse.Read();
 
 		switch (event.GetType())
 		{
@@ -136,7 +138,7 @@ void Application::HandleInputs()
 
 	window.Gfx().Camera().Move(dPos[0], dPos[1], dPos[2]);
 
-	if (window.mouse.RightPressed())
+	if (mouse.RightPressed())
 	{
 		window.Gfx().Camera().Turn((prevCursor.y - cursor.y) / 200.0f, (cursor.x - prevCursor.x) / 200.0f);
 	}
