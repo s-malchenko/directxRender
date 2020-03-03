@@ -47,10 +47,11 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderTargetView;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> depthStencilView;
-	Microsoft::WRL::ComPtr<ID3D11Texture2D> zBuffer;
 	HWND hWnd;
 	std::unique_ptr<PerspectiveCamera> pCam;
 	uint16_t width, height;
+	const uint16_t sampleCount = 4;
+	UINT msaaQuality;
 	void CreateDeviceAndContext();
 	void CreateSwapChain();
 	void CreateRenderTargetView();

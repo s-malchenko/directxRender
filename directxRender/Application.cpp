@@ -6,6 +6,7 @@
 
 Application::Application() : window("DX render window", 800, 500)
 {
+	window.SetActivationHandler([this]() { this->HandleWindowInactive(); });
 }
 
 int Application::Run()
@@ -26,6 +27,12 @@ int Application::Run()
 
 void Application::ProceedFrame()
 {
+	if (!window.Active())
+	{
+		Util::SleepMs(1);
+		return;
+	}
+
 	worldTimer.Tick();
 	appTimer.Tick();
 	const auto appTime = worldTimer.GetPassedTime();
@@ -144,4 +151,39 @@ void Application::HandleInputs()
 	}
 
 	prevCursor = cursor;
+}
+
+void Application::HandleWindowInactive()
+{
+	static bool prevActive = false;
+	static bool worldPaused = false;
+	static bool appPaused = false;
+	bool curActive = window.Active();
+
+	if (prevActive == curActive)
+	{
+		return;
+	}
+
+	if (prevActive)
+	{
+		worldPaused = worldTimer.Paused();
+		appPaused = appTimer.Paused();
+		worldTimer.Pause();
+		appTimer.Pause();
+	}
+	else
+	{
+		if (!worldPaused)
+		{
+			worldTimer.Continue();
+		}
+
+		if (!appPaused)
+		{
+			appTimer.Continue();
+		}
+	}
+
+	prevActive = curActive;
 }

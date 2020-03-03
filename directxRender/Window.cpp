@@ -94,6 +94,11 @@ int Window::GetHeight() const noexcept
 	return height;
 }
 
+bool Window::Active() const
+{
+	return active;
+}
+
 std::optional<int> Window::ProcessMessages()
 {
 	MSG msg;
@@ -110,6 +115,11 @@ std::optional<int> Window::ProcessMessages()
 	}
 
 	return {};
+}
+
+void Window::SetActivationHandler(handler_t handler)
+{
+	onActiveChanged = handler;
 }
 
 Mouse& Window::GetMouse()
@@ -166,7 +176,35 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_CLOSE:
 		PostQuitMessage(0);
 		break;
+	case WM_ACTIVATE:
+		if (LOWORD(wParam) == WA_INACTIVE)
+		{
+			active = false;
+		}
+		else
+		{
+			active = true;
+		}
 
+		if (onActiveChanged)
+		{
+			onActiveChanged.value()();
+		}
+		break;
+	case WM_ENTERSIZEMOVE:
+		active = false;
+		if (onActiveChanged)
+		{
+			onActiveChanged.value()();
+		}
+		break;
+	case WM_EXITSIZEMOVE:
+		active = true;
+		if (onActiveChanged)
+		{
+			onActiveChanged.value()();
+		}
+		break;
 	//mouse messages
 	case WM_LBUTTONDOWN:
 		mouse.PostEvent(Mouse::Event::Type::LPress, MOUSE_POSITION(lParam));

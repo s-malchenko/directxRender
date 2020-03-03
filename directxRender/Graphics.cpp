@@ -29,7 +29,7 @@ void Graphics::EndFrame()
 	infoManager.Set();
 #endif
 
-	if (const auto hr = swapChain->Present(1, 0); FAILED(hr))
+	if (const auto hr = swapChain->Present(0, 0); FAILED(hr))
 	{
 		if (hr == DXGI_ERROR_DEVICE_REMOVED)
 		{
@@ -56,7 +56,6 @@ void Graphics::HandleWindowResize()
 
 	RenewSize();
 	renderTargetView = nullptr;
-	zBuffer = nullptr;
 	depthStencilView = nullptr;
 	GFX_THROW_INFO(swapChain->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0));
 	CreateRenderTargetView();
@@ -225,12 +224,16 @@ void Graphics::CreateDeviceAndContext()
 
 void Graphics::CreateSwapChain()
 {
+	constexpr DXGI_FORMAT textureFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+	
 	DXGI_SWAP_CHAIN_DESC sd = {};
+	GFX_THROW_INFO(device->CheckMultisampleQualityLevels(textureFormat, sampleCount, &msaaQuality));
 
-	sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	sd.BufferDesc.Format = textureFormat;
 	sd.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
 	sd.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
-	sd.SampleDesc.Count = 1;
+	sd.SampleDesc.Count = msaaQuality > 0 ? sampleCount : 1;
+	sd.SampleDesc.Quality = msaaQuality > 0 ? msaaQuality - 1 : 0;
 	sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	sd.BufferCount = 1;
 	sd.Windowed = true;
@@ -267,21 +270,22 @@ void Graphics::CreateDepthStencilView()
 	GFX_THROW_INFO(device->CreateDepthStencilState(&ds, &dsState));
 	context->OMSetDepthStencilState(dsState.Get(), 1);
 
+	wrl::ComPtr<ID3D11Texture2D> zBuffer;
 	D3D11_TEXTURE2D_DESC textureDesc = {};
 	textureDesc.Width = width;
 	textureDesc.Height = height;
 	textureDesc.MipLevels = 1;
 	textureDesc.ArraySize = 1;
 	textureDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	textureDesc.SampleDesc.Count = 1;
-	textureDesc.SampleDesc.Quality = 0;
+	textureDesc.SampleDesc.Count = msaaQuality > 0 ? sampleCount : 1;
+	textureDesc.SampleDesc.Quality = msaaQuality > 0 ? msaaQuality - 1 : 0;
 	textureDesc.Usage = D3D11_USAGE_DEFAULT;
 	textureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 	GFX_THROW_INFO(device->CreateTexture2D(&textureDesc, nullptr, &zBuffer));
 
 	D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
 	dsvDesc.Format = textureDesc.Format;
-	dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	dsvDesc.ViewDimension = msaaQuality > 0 ? D3D11_DSV_DIMENSION_TEXTURE2DMS : D3D11_DSV_DIMENSION_TEXTURE2D;
 	dsvDesc.Texture2D.MipSlice = 0;
 	GFX_THROW_INFO(device->CreateDepthStencilView(zBuffer.Get(), &dsvDesc, &depthStencilView));
 }

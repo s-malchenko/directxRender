@@ -10,9 +10,11 @@
 #include <string>
 #include <optional>
 #include <memory>
+#include <functional>
 
 class Window
 {
+	using handler_t = std::function<void()>;
 public:
 	class Exception : public HrException
 	{
@@ -44,11 +46,14 @@ public:
 	void SetTitle(const std::string& title);
 	int GetWidth() const noexcept;
 	int GetHeight() const noexcept;
+	bool Active() const;
 	std::optional<int> ProcessMessages();
+	void SetActivationHandler(handler_t handler);
 
 	Mouse& GetMouse();
 	Keyboard& GetKeyboard();
 	Graphics& Gfx();
+
 private:
 	static LRESULT CALLBACK HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK DeliverMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -63,6 +68,7 @@ private:
 	HWND hWnd;
 	std::unique_ptr<Graphics> pGfx;
 	bool active = false;
+	std::optional<handler_t> onActiveChanged;
 };
 
 //macro for capturing file and line to exception
