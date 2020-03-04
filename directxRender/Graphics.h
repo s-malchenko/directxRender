@@ -5,6 +5,7 @@
 #include "HrException.h"
 #include "MeshPrimitives.h"
 #include "PerspectiveCamera.h"
+#include "Scene.h"
 #include <d3d11.h>
 #include <memory>
 #include <string>
@@ -38,7 +39,9 @@ public:
 	void EndFrame();
 	void ClearBuffer(float red, float green, float blue) noexcept;
 	void HandleWindowResize();
-	void DrawPrimitiveMesh(const MeshPrimitive& mesh, float angle, float xOffset, float zOffset);
+	// dt - delta time in seconds
+	void UpdateScene(float dt);
+	void DrawScene();
 	PerspectiveCamera& Camera();
 
 private:
@@ -47,6 +50,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderTargetView;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> depthStencilView;
+	Scene scene;
 	HWND hWnd;
 	std::unique_ptr<PerspectiveCamera> pCam;
 	uint16_t width, height;
@@ -58,6 +62,9 @@ private:
 	void CreateDepthStencilView();
 	void RenewSize();
 	void SetViewport();
+	void PopulateScene();
+	void BuildGeometryBuffers();
+	void SetShaders();
 #ifndef NDEBUG
 	DxgiInfoManager infoManager;
 #endif

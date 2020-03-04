@@ -4,6 +4,7 @@
 #include "Util.h"
 #include <d3dcompiler.h>
 #include <DirectXMath.h>
+#include <algorithm>
 #include <sstream>
 
 #pragma comment(lib, "d3d11.lib")
@@ -21,6 +22,9 @@ Graphics::Graphics(HWND hWnd) : hWnd(hWnd)
 	CreateRenderTargetView();
 	CreateDepthStencilView();
 	SetViewport();
+	PopulateScene();
+	BuildGeometryBuffers();
+	SetShaders();
 }
 
 void Graphics::EndFrame()
@@ -63,129 +67,7 @@ void Graphics::HandleWindowResize()
 	SetViewport();
 }
 
-void Graphics::DrawPrimitiveMesh(const MeshPrimitive& mesh, float angle, float xOffset, float zOffset)
-{
-	namespace wrl = Microsoft::WRL;
-
-	struct Color
-	{
-		float r;
-		float g;
-		float b;
-		float a;
-	};
-
-	const auto& vertices = mesh.vertices;
-	const auto& indices = mesh.indices;
-	assert(!vertices.empty());
-	assert(!indices.empty());
-
-	D3D11_BUFFER_DESC desc = {};
-	desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	desc.Usage = D3D11_USAGE_DEFAULT;
-	desc.ByteWidth = (UINT)(sizeof(vertices[0]) * vertices.size());
-	desc.StructureByteStride = sizeof(vertices[0]);
-	D3D11_SUBRESOURCE_DATA sd = {};
-	sd.pSysMem = vertices.data();
-	wrl::ComPtr<ID3D11Buffer> vertexBuffer;
-	GFX_THROW_INFO(device->CreateBuffer(&desc, &sd, &vertexBuffer));
-	const UINT stride = sizeof(vertices[0]);
-	const UINT offset = 0;
-	context->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
-
-	D3D11_BUFFER_DESC idesc = {};
-	idesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	idesc.Usage = D3D11_USAGE_DEFAULT;
-	idesc.ByteWidth = (UINT)(sizeof(indices[0]) * indices.size());
-	idesc.StructureByteStride = sizeof(indices[0]);
-	D3D11_SUBRESOURCE_DATA isd = {};
-	isd.pSysMem = indices.data();
-	wrl::ComPtr<ID3D11Buffer> indexBuffer;
-	GFX_THROW_INFO(device->CreateBuffer(&idesc, &isd, &indexBuffer));
-	context->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
-
-	struct ConstantBuffer
-	{
-		dx::XMMATRIX transformation;
-	};
-
-	const ConstantBuffer cb = 
-	{
-		{
-			dx::XMMatrixTranspose(
-				dx::XMMatrixRotationRollPitchYaw(angle, angle / 1.3f, angle * 1.3f)
-				* dx::XMMatrixTranslation(xOffset, 0, zOffset)
-				* Camera().GetPerspectiveViewTransform()
-			)
-		}
-	};
-
-	D3D11_BUFFER_DESC cdesc = {};
-	cdesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	cdesc.Usage = D3D11_USAGE_DYNAMIC;
-	cdesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	cdesc.ByteWidth = sizeof(cb);
-	cdesc.StructureByteStride = 0;
-	D3D11_SUBRESOURCE_DATA csd = {};
-	csd.pSysMem = &cb;
-	wrl::ComPtr<ID3D11Buffer> constantBuffer;
-	GFX_THROW_INFO(device->CreateBuffer(&cdesc, &csd, &constantBuffer));
-	context->VSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
-
-	const Color faceColors[] =
-	{
-		{1.0f, 0.0f, 1.0f, 1.0f},
-		{0.0f, 1.0f, 1.0f, 1.0f},
-		{1.0f, 1.0f, 0.0f, 1.0f},
-		{1.0f, 0.0f, 0.0f, 1.0f},
-		{0.0f, 1.0f, 0.0f, 1.0f},
-		{0.0f, 0.0f, 1.0f, 1.0f},
-	};
-
-	cdesc = {};
-	cdesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	cdesc.Usage = D3D11_USAGE_DYNAMIC;
-	cdesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	cdesc.ByteWidth = sizeof(faceColors);
-	cdesc.StructureByteStride = 0;
-	csd = {};
-	csd.pSysMem = faceColors;
-	wrl::ComPtr<ID3D11Buffer> constantBufferColors;
-	GFX_THROW_INFO(device->CreateBuffer(&cdesc, &csd, &constantBufferColors));
-	context->PSSetConstantBuffers(0, 1, constantBufferColors.GetAddressOf());
-
-	wrl::ComPtr<ID3DBlob> blob;
-	wrl::ComPtr<ID3D11PixelShader> pShader;
-	GFX_THROW_INFO(D3DReadFileToBlob(L"PixelShader.cso", &blob));
-	GFX_THROW_INFO(device->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, &pShader));
-	context->PSSetShader(pShader.Get(), nullptr, 0);
-
-	wrl::ComPtr<ID3D11VertexShader> vShader;
-	GFX_THROW_INFO(D3DReadFileToBlob(L"VertexShader.cso", &blob));
-	GFX_THROW_INFO(device->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, &vShader));
-	context->VSSetShader(vShader.Get(), nullptr, 0);
-
-	// input layout for vertices (2d position only)
-	wrl::ComPtr<ID3D11InputLayout> inputLayout;
-	const D3D11_INPUT_ELEMENT_DESC elementDesc[] = 
-	{
-		{ "Position", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	};
-	GFX_THROW_INFO(device->CreateInputLayout(
-		elementDesc,
-		static_cast<UINT>(std::size(elementDesc)),
-		blob->GetBufferPointer(),
-		blob->GetBufferSize(),
-		&inputLayout
-	));
-
-	context->IASetInputLayout(inputLayout.Get());
-	context->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	GFX_THROW_INFO_VOID(context->DrawIndexed(static_cast<unsigned int>(std::size(indices)), 0, 0));
-}
-
-PerspectiveCamera & Graphics::Camera()
+PerspectiveCamera& Graphics::Camera()
 {
 	if (!pCam)
 	{
@@ -307,6 +189,152 @@ void Graphics::SetViewport()
 	vp.Height = height;
 	vp.MaxDepth = 1;
 	context->RSSetViewports(1, &vp);
+}
+
+void Graphics::PopulateScene()
+{
+	scene.Clear();
+	scene.AddObject(MeshPrimitives::Cone);
+	scene.AddObject(MeshPrimitives::Cube);
+	scene.AddObject(MeshPrimitives::Pyramid);
+	scene.AddObject(MeshPrimitives::OriginPlane);
+}
+
+void Graphics::BuildGeometryBuffers()
+{
+	std::vector<Vertex> vertices;
+	std::vector<uint32_t> indices;
+	vertices.reserve(scene.VerticesCount());
+	indices.reserve(scene.IndicesCount());
+	size_t indexOffset = 0;
+
+	for (const auto& obj : scene.GetObjects())
+	{
+		std::copy(obj.vertices.begin(), obj.vertices.end(), std::back_inserter(vertices));
+		std::for_each(obj.indices.begin(), obj.indices.end(), [&indices, indexOffset](uint32_t index) { indices.emplace_back(index + indexOffset); });
+		indexOffset += obj.vertices.size();
+	}
+
+	D3D11_BUFFER_DESC desc = {};
+	desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.ByteWidth = (UINT)(sizeof(vertices[0]) * vertices.size());
+	desc.StructureByteStride = sizeof(vertices[0]);
+	D3D11_SUBRESOURCE_DATA sd = {};
+	sd.pSysMem = vertices.data();
+	wrl::ComPtr<ID3D11Buffer> vertexBuffer;
+	GFX_THROW_INFO(device->CreateBuffer(&desc, &sd, &vertexBuffer));
+	const UINT stride = sizeof(vertices[0]);
+	const UINT offset = 0;
+	context->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
+
+	D3D11_BUFFER_DESC idesc = {};
+	idesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	idesc.Usage = D3D11_USAGE_DEFAULT;
+	idesc.ByteWidth = (UINT)(sizeof(indices[0]) * indices.size());
+	idesc.StructureByteStride = sizeof(indices[0]);
+	D3D11_SUBRESOURCE_DATA isd = {};
+	isd.pSysMem = indices.data();
+	wrl::ComPtr<ID3D11Buffer> indexBuffer;
+	GFX_THROW_INFO(device->CreateBuffer(&idesc, &isd, &indexBuffer));
+	context->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+}
+
+void Graphics::SetShaders()
+{
+	wrl::ComPtr<ID3DBlob> blob;
+	wrl::ComPtr<ID3D11PixelShader> pShader;
+	GFX_THROW_INFO(D3DReadFileToBlob(L"PixelShader.cso", &blob));
+	GFX_THROW_INFO(device->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, &pShader));
+	context->PSSetShader(pShader.Get(), nullptr, 0);
+
+	wrl::ComPtr<ID3D11VertexShader> vShader;
+	GFX_THROW_INFO(D3DReadFileToBlob(L"VertexShader.cso", &blob));
+	GFX_THROW_INFO(device->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, &vShader));
+	context->VSSetShader(vShader.Get(), nullptr, 0);
+
+	// input layout for vertices (2d position only)
+	wrl::ComPtr<ID3D11InputLayout> inputLayout;
+	const D3D11_INPUT_ELEMENT_DESC elementDesc[] =
+	{
+		{ "Position", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "Color", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	};
+	GFX_THROW_INFO(device->CreateInputLayout(
+		elementDesc,
+		static_cast<UINT>(std::size(elementDesc)),
+		blob->GetBufferPointer(),
+		blob->GetBufferSize(),
+		&inputLayout
+	));
+
+	context->IASetInputLayout(inputLayout.Get());
+	context->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+}
+
+void Graphics::UpdateScene(float dt)
+{
+	namespace wrl = Microsoft::WRL;
+
+	struct Color
+	{
+		float r;
+		float g;
+		float b;
+		float a;
+	};
+
+
+	struct ConstantBuffer
+	{
+		dx::XMMATRIX transformation;
+	};
+
+	const ConstantBuffer cb =
+	{
+		{
+			dx::XMMatrixTranspose(Camera().GetPerspectiveViewTransform())
+		}
+	};
+
+	D3D11_BUFFER_DESC cdesc = {};
+	cdesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	cdesc.Usage = D3D11_USAGE_DYNAMIC;
+	cdesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	cdesc.ByteWidth = sizeof(cb);
+	cdesc.StructureByteStride = 0;
+	D3D11_SUBRESOURCE_DATA csd = {};
+	csd.pSysMem = &cb;
+	wrl::ComPtr<ID3D11Buffer> constantBuffer;
+	GFX_THROW_INFO(device->CreateBuffer(&cdesc, &csd, &constantBuffer));
+	context->VSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
+
+	const Color faceColors[] =
+	{
+		{1.0f, 0.0f, 1.0f, 1.0f},
+		{0.0f, 1.0f, 1.0f, 1.0f},
+		{1.0f, 1.0f, 0.0f, 1.0f},
+		{1.0f, 0.0f, 0.0f, 1.0f},
+		{0.0f, 1.0f, 0.0f, 1.0f},
+		{0.0f, 0.0f, 1.0f, 1.0f},
+	};
+
+	cdesc = {};
+	cdesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	cdesc.Usage = D3D11_USAGE_DYNAMIC;
+	cdesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	cdesc.ByteWidth = sizeof(faceColors);
+	cdesc.StructureByteStride = 0;
+	csd = {};
+	csd.pSysMem = faceColors;
+	wrl::ComPtr<ID3D11Buffer> constantBufferColors;
+	GFX_THROW_INFO(device->CreateBuffer(&cdesc, &csd, &constantBufferColors));
+	context->PSSetConstantBuffers(0, 1, constantBufferColors.GetAddressOf());
+}
+
+void Graphics::DrawScene()
+{
+	GFX_THROW_INFO_VOID(context->DrawIndexed(static_cast<unsigned int>(scene.IndicesCount()), 0, 0));
 }
 
 Graphics::Exception::Exception(const char* file, int line, HRESULT hr, const std::vector<std::string>& messages)

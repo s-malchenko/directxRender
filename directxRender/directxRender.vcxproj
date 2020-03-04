@@ -144,6 +144,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
+    <ClCompile Include="GeometryMesh.cpp" />
     <ClCompile Include="PerspectiveCamera.cpp" />
     <ClCompile Include="DxgiInfoManager.cpp" />
     <ClCompile Include="ExtendedException.cpp" />
@@ -152,6 +153,7 @@
     <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="MeshPrimitives.cpp" />
     <ClCompile Include="Mouse.cpp" />
+    <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="Util.cpp" />
     <ClCompile Include="WinMain.cpp" />
@@ -159,6 +161,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h" />
+    <ClInclude Include="GeometryMesh.h" />
     <ClInclude Include="GfxMacros.h" />
     <ClInclude Include="PerspectiveCamera.h" />
     <ClInclude Include="DxgiInfoManager.h" />
@@ -170,6 +173,7 @@
     <ClInclude Include="MeshPrimitives.h" />
     <ClInclude Include="Mouse.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="Scene.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="Util.h" />
     <ClInclude Include="Window.h" />

@@ -43,9 +43,8 @@ void Application::ProceedFrame()
 	window.Gfx().ClearBuffer(red, green, blue);
 	HandleInputs();
 	
-	window.Gfx().DrawPrimitiveMesh(MeshPrimitives::Cone, 0, 0, 0);
-	window.Gfx().DrawPrimitiveMesh(MeshPrimitives::OriginPlane, 0, 0, -0.5);
-	window.Gfx().DrawPrimitiveMesh(MeshPrimitives::Cube, -appTime, 0, 0.5f * std::sin(appTime * 2));
+	window.Gfx().UpdateScene(appTimer.Delta());
+	window.Gfx().DrawScene();
 	window.Gfx().EndFrame();
 }
 
