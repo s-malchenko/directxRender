@@ -122,6 +122,12 @@ void Application::HandleInputs()
 				}
 			}
 			break;
+		case 'Q':
+			if (event.IsPress())
+			{
+				window.Gfx().HotReload();
+			}
+			break;
 		}
 	}
 

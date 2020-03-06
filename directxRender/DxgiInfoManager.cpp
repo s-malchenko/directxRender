@@ -1,7 +1,7 @@
 #include "DxgiInfoManager.h"
 
 #include "Graphics.h"
-#include "GfxMacros.h"
+#include "GraphicsException.h"
 #include "HrException.h"
 #include "Util.h"
 #include <dxgidebug.h>

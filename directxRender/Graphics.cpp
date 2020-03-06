@@ -1,17 +1,17 @@
 #include "Graphics.h"
 
-#include "GfxMacros.h"
+#include "GraphicsException.h"
+#include "Technique.h"
 #include "Util.h"
-#include <d3dcompiler.h>
 #include <DirectXMath.h>
 #include <algorithm>
-#include <sstream>
 
 #pragma comment(lib, "d3d11.lib")
-#pragma comment(lib, "D3DCompiler.lib")
 
 namespace wrl = Microsoft::WRL;
 namespace dx = DirectX;
+
+Technique defTech = Technique({ L"VertexShader", L"PixelShader" });
 
 Graphics::Graphics(HWND hWnd) : hWnd(hWnd)
 {
@@ -24,13 +24,14 @@ Graphics::Graphics(HWND hWnd) : hWnd(hWnd)
 	SetViewport();
 	PopulateScene();
 	BuildGeometryBuffers();
-	SetShaders();
+	defTech.Load(device);
+	defTech.Bind(context);
 }
 
 void Graphics::EndFrame()
 {
 #ifndef NDEBUG
-	infoManager.Set();
+	GraphicsException::infoManager.Set();
 #endif
 
 	if (const auto hr = swapChain->Present(0, 0); FAILED(hr))
@@ -242,34 +243,7 @@ void Graphics::BuildGeometryBuffers()
 
 void Graphics::SetShaders()
 {
-	wrl::ComPtr<ID3DBlob> blob;
-	wrl::ComPtr<ID3D11PixelShader> pShader;
-	GFX_THROW_INFO(D3DReadFileToBlob(L"PixelShader.cso", &blob));
-	GFX_THROW_INFO(device->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, &pShader));
-	context->PSSetShader(pShader.Get(), nullptr, 0);
-
-	wrl::ComPtr<ID3D11VertexShader> vShader;
-	GFX_THROW_INFO(D3DReadFileToBlob(L"VertexShader.cso", &blob));
-	GFX_THROW_INFO(device->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, &vShader));
-	context->VSSetShader(vShader.Get(), nullptr, 0);
-
-	// input layout for vertices (2d position only)
-	wrl::ComPtr<ID3D11InputLayout> inputLayout;
-	const D3D11_INPUT_ELEMENT_DESC elementDesc[] =
-	{
-		{ "Position", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "Color", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	};
-	GFX_THROW_INFO(device->CreateInputLayout(
-		elementDesc,
-		static_cast<UINT>(std::size(elementDesc)),
-		blob->GetBufferPointer(),
-		blob->GetBufferSize(),
-		&inputLayout
-	));
-
-	context->IASetInputLayout(inputLayout.Get());
-	context->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	
 }
 
 void Graphics::UpdateScene(float dt)
@@ -337,48 +311,9 @@ void Graphics::DrawScene()
 	GFX_THROW_INFO_VOID(context->DrawIndexed(static_cast<unsigned int>(scene.IndicesCount()), 0, 0));
 }
 
-Graphics::Exception::Exception(const char* file, int line, HRESULT hr, const std::vector<std::string>& messages)
-	: HrException(file, line, hr)
+void Graphics::HotReload()
 {
-	std::ostringstream ss;
-
-	for (const auto& msg : messages)
-	{
-		ss << msg << std::endl;
-	}
-
-	info = ss.str();
+	defTech.Rebuild(device);
+	defTech.Bind(context);
 }
 
-const char* Graphics::Exception::what() const
-{
-	if (!info.empty())
-	{
-		std::ostringstream ss;
-		ss << HrException::what() << std::endl << info;
-		buffer = ss.str();
-		return buffer.c_str();
-	}
-
-	return HrException::what();
-}
-
-const char* Graphics::Exception::GetType() const noexcept
-{
-	return "Graphics Exception";
-}
-
-const std::string & Graphics::Exception::GetErrorInfo() const
-{
-	return info;
-}
-
-Graphics::DeviceRemovedException::DeviceRemovedException(const char* file, int line, HRESULT hr, const std::vector<std::string>& messages)
-	: Exception(file, line, hr, messages)
-{
-}
-
-const char* Graphics::DeviceRemovedException::GetType() const noexcept
-{
-	return "DeviceRemoved Exception";
-}

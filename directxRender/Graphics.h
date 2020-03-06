@@ -1,8 +1,6 @@
 #pragma once
 
 #include "EasyWin.h"
-#include "DxgiInfoManager.h"
-#include "HrException.h"
 #include "MeshPrimitives.h"
 #include "PerspectiveCamera.h"
 #include "Scene.h"
@@ -15,33 +13,23 @@
 class Graphics
 {
 public:
-	class Exception : public HrException
-	{
-	public:
-		Exception(const char* file, int line, HRESULT hr, const std::vector<std::string>& messages = {});
-		const char* what() const override;
-		const char* GetType() const noexcept override;
-		const std::string& GetErrorInfo() const;
-	private:
-		std::string info;
-	};
-
-	class DeviceRemovedException : public Exception
-	{
-	public:
-		DeviceRemovedException(const char* file, int line, HRESULT hr, const std::vector<std::string>& messages = {});
-		const char* GetType() const noexcept override;
-	};
-
 	Graphics(HWND hWnd);
 	Graphics(const Graphics&) = delete;
 	Graphics& operator=(const Graphics&) = delete;
 	void EndFrame();
+
+	/**
+	 * Clear render target view with given normalized color.
+	 */
 	void ClearBuffer(float red, float green, float blue) noexcept;
 	void HandleWindowResize();
-	// dt - delta time in seconds
+
+	/**
+	 * Update scene. Param dt - time delta in seconds.
+	 */
 	void UpdateScene(float dt);
 	void DrawScene();
+	void HotReload();
 	PerspectiveCamera& Camera();
 
 private:
@@ -65,8 +53,4 @@ private:
 	void PopulateScene();
 	void BuildGeometryBuffers();
 	void SetShaders();
-#ifndef NDEBUG
-	DxgiInfoManager infoManager;
-#endif
-
 };

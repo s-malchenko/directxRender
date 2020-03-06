@@ -19,6 +19,9 @@
     <Filter Include="Geometry">
       <UniqueIdentifier>{4bcd41a6-8f23-4604-b3f3-7ed5f909bb6b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Pipeline">
+      <UniqueIdentifier>{eefe453c-cc66-4bc7-9448-6c3c8331f3ae}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Window.cpp">
@@ -65,6 +68,12 @@
     </ClCompile>
     <ClCompile Include="GeometryMesh.cpp">
       <Filter>Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="Technique.cpp">
+      <Filter>Pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsException.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -118,6 +127,12 @@
     </ClInclude>
     <ClInclude Include="GeometryMesh.h">
       <Filter>Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="Technique.h">
+      <Filter>Pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsException.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
