@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -146,6 +146,7 @@
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="GeometryMesh.cpp" />
     <ClCompile Include="GraphicsException.cpp" />
+    <ClCompile Include="InputLayout.cpp" />
     <ClCompile Include="PerspectiveCamera.cpp" />
     <ClCompile Include="DxgiInfoManager.cpp" />
     <ClCompile Include="ExtendedException.cpp" />
@@ -166,6 +167,7 @@
     <ClInclude Include="GeometryMesh.h" />
     <ClInclude Include="GfxMacros.h" />
     <ClInclude Include="GraphicsException.h" />
+    <ClInclude Include="InputLayout.h" />
     <ClInclude Include="PerspectiveCamera.h" />
     <ClInclude Include="DxgiInfoManager.h" />
     <ClInclude Include="EasyWin.h" />

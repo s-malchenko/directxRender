@@ -7,7 +7,7 @@
 
 namespace wrl = Microsoft::WRL;
 
-Technique::Technique(ShaderNames shaders) : names(shaders)
+Technique::Technique(ShaderNames shaders, const InputLayout& layout) : names(shaders), inputLayoutDesc(layout)
 {
 }
 
@@ -20,22 +20,16 @@ void Technique::Load(Microsoft::WRL::ComPtr<ID3D11Device> device)
 	GFX_THROW_INFO(device->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, &pShader));
 	GFX_THROW_INFO(D3DReadFileToBlob(vsFile.data(), &blob));
 	GFX_THROW_INFO(device->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, &vShader));
-
-	const D3D11_INPUT_ELEMENT_DESC elementDesc[] =
-	{
-		{ "Position", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "Color", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	};
 	GFX_THROW_INFO(device->CreateInputLayout(
-		elementDesc,
-		static_cast<UINT>(std::size(elementDesc)),
+		inputLayoutDesc.GetLayout(),
+		inputLayoutDesc.GetSize(),
 		blob->GetBufferPointer(),
 		blob->GetBufferSize(),
 		&inputLayout
 	));
 }
 
-HRESULT CompileShader(_In_ LPCWSTR srcFile, _In_ LPCSTR entryPoint, _In_ LPCSTR profile, _Outptr_ ID3DBlob** blob)
+HRESULT CompileShader(LPCWSTR srcFile, LPCSTR entryPoint, LPCSTR profile, ID3DBlob** blob)
 {
 	if (!srcFile || !entryPoint || !profile || !blob)
 		return E_INVALIDARG;
@@ -43,7 +37,7 @@ HRESULT CompileShader(_In_ LPCWSTR srcFile, _In_ LPCSTR entryPoint, _In_ LPCSTR 
 	*blob = nullptr;
 
 	UINT flags = D3DCOMPILE_ENABLE_STRICTNESS;
-#if defined( DEBUG ) || defined( _DEBUG )
+#ifndef NDEBUG
 	flags |= D3DCOMPILE_DEBUG;
 #endif
 
@@ -86,15 +80,9 @@ void Technique::Rebuild(Microsoft::WRL::ComPtr<ID3D11Device> device)
 	GFX_THROW_INFO(device->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, &pShader));
 	CompileShader(vsFile.data(), "main", "vs_5_0", &blob);
 	GFX_THROW_INFO(device->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, &vShader));
-
-	const D3D11_INPUT_ELEMENT_DESC elementDesc[] =
-	{
-		{ "Position", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "Color", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	};
 	GFX_THROW_INFO(device->CreateInputLayout(
-		elementDesc,
-		static_cast<UINT>(std::size(elementDesc)),
+		inputLayoutDesc.GetLayout(),
+		inputLayoutDesc.GetSize(),
 		blob->GetBufferPointer(),
 		blob->GetBufferSize(),
 		&inputLayout

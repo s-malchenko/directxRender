@@ -11,7 +11,13 @@
 namespace wrl = Microsoft::WRL;
 namespace dx = DirectX;
 
-Technique defTech = Technique({ L"VertexShader", L"PixelShader" });
+const D3D11_INPUT_ELEMENT_DESC defLayoutDesc[] =
+{
+	{ "Position", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "Color", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+};
+
+Technique defTech = Technique({ L"VertexShader", L"PixelShader" }, { defLayoutDesc, std::size(defLayoutDesc) });
 
 Graphics::Graphics(HWND hWnd) : hWnd(hWnd)
 {
@@ -257,7 +263,6 @@ void Graphics::UpdateScene(float dt)
 		float b;
 		float a;
 	};
-
 
 	struct ConstantBuffer
 	{
