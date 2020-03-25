@@ -7,7 +7,7 @@ using namespace DirectX;
 PerspectiveCamera::PerspectiveCamera(float fov, float aspect, float nearPlane, float farPlane)
 	: fov(fov), aspect(aspect), nearPlane(nearPlane), farPlane(farPlane)
 {
-	worldTransform = XMMatrixTranslation(0, -4, 0) * XMMatrixRotationX(-XM_PIDIV2);
+	worldTransform = XMMatrixTranslation(0, 0, 4);
 }
 
 void PerspectiveCamera::SetFov(float newFov) noexcept

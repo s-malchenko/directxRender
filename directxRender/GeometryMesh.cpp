@@ -6,7 +6,9 @@ GeometryMesh::GeometryMesh(const MeshPrimitive& mesh)
 {
 	for (const auto& v : mesh.vertices)
 	{
-		vertices.push_back({ XMFLOAT3(v.x, v.y, v.z), XMFLOAT4() });
+		Vertex vertex;
+		vertex.pos = XMFLOAT3(v.x, v.y, v.z);
+		vertices.push_back(vertex);
 	}
 
 	for (const auto i : mesh.indices)

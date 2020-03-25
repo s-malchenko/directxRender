@@ -52,5 +52,4 @@ private:
 	void SetViewport();
 	void PopulateScene();
 	void BuildGeometryBuffers();
-	void SetShaders();
 };

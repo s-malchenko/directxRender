@@ -7,6 +7,8 @@
 struct Vertex
 {
 	DirectX::XMFLOAT3 pos;
+	DirectX::XMFLOAT3 normal;
+	DirectX::XMFLOAT2 texcoord;
 	DirectX::XMFLOAT4 color;
 };
 
@@ -18,4 +20,3 @@ struct GeometryMesh
 	GeometryMesh() = default;
 	GeometryMesh(const MeshPrimitive& mesh);
 };
-

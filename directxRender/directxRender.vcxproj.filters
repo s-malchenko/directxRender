@@ -137,6 +137,9 @@
     <ClInclude Include="GraphicsException.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ObjLoader.h">
+      <Filter>Geometry</Filter>
+    </ClInclude>
     <ClInclude Include="InputLayout.h">
       <Filter>Pipeline</Filter>
     </ClInclude>

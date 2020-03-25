@@ -11,6 +11,7 @@ public:
 	~Scene() = default;
 	void AddObject(const GeometryMesh& obj);
 	void Clear();
+	void LoadObj(const char* fileName);
 	size_t VerticesCount() const;
 	size_t IndicesCount() const;
 	const std::vector<GeometryMesh>& GetObjects();

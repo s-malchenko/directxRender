@@ -168,6 +168,7 @@
     <ClInclude Include="GfxMacros.h" />
     <ClInclude Include="GraphicsException.h" />
     <ClInclude Include="InputLayout.h" />
+    <ClInclude Include="ObjLoader.h" />
     <ClInclude Include="PerspectiveCamera.h" />
     <ClInclude Include="DxgiInfoManager.h" />
     <ClInclude Include="EasyWin.h" />

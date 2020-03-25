@@ -14,6 +14,8 @@ namespace dx = DirectX;
 const D3D11_INPUT_ELEMENT_DESC defLayoutDesc[] =
 {
 	{ "Position", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "Normal", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "Texcoord", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	{ "Color", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 };
 
@@ -201,10 +203,7 @@ void Graphics::SetViewport()
 void Graphics::PopulateScene()
 {
 	scene.Clear();
-	scene.AddObject(MeshPrimitives::Cone);
-	scene.AddObject(MeshPrimitives::Cube);
-	scene.AddObject(MeshPrimitives::Pyramid);
-	scene.AddObject(MeshPrimitives::OriginPlane);
+	scene.LoadObj("..//..//obj//SimpleAirplane//export//simple_airplane.obj");
 }
 
 void Graphics::BuildGeometryBuffers()
@@ -245,11 +244,6 @@ void Graphics::BuildGeometryBuffers()
 	wrl::ComPtr<ID3D11Buffer> indexBuffer;
 	GFX_THROW_INFO(device->CreateBuffer(&idesc, &isd, &indexBuffer));
 	context->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
-}
-
-void Graphics::SetShaders()
-{
-	
 }
 
 void Graphics::UpdateScene(float dt)
@@ -311,7 +305,7 @@ void Graphics::UpdateScene(float dt)
 	context->PSSetConstantBuffers(0, 1, constantBufferColors.GetAddressOf());
 }
 
-void Graphics::DrawScene()
+void Graphics::DrawScene() 
 {
 	GFX_THROW_INFO_VOID(context->DrawIndexed(static_cast<unsigned int>(scene.IndicesCount()), 0, 0));
 }
@@ -321,4 +315,3 @@ void Graphics::HotReload()
 	defTech.Rebuild(device);
 	defTech.Bind(context);
 }
-

@@ -3,7 +3,13 @@ cbuffer cbuf
 	float4 colors[6];
 };
 
-float4 main(uint tid : SV_PrimitiveID) : SV_Target
+struct VertexOut
 {
-	return 0.5 * colors[tid % 5];
+	float4 pos : SV_Position;
+	float3 normal : Normal;
+};
+
+float4 main(VertexOut pin) : SV_Target
+{
+	return float4(pin.normal, 1);
 }
