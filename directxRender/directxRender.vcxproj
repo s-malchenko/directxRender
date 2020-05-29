@@ -198,6 +198,7 @@
     <ClInclude Include="source\pipeline\Technique.h" />
     <ClInclude Include="source\scene\PerspectiveCamera.h" />
     <ClInclude Include="source\scene\Scene.h" />
+    <ClInclude Include="source\scene\SceneObject.h" />
     <ClInclude Include="source\utility\DxgiInfoManager.h" />
     <ClInclude Include="source\utility\EasyWin.h" />
     <ClInclude Include="source\utility\Timer.h" />

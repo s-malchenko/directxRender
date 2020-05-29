@@ -1,22 +1,25 @@
 #pragma once
 
 #include "geometry/GeometryMesh.h"
+#include "scene/SceneObject.h"
 #include <vector>
 
 class Scene
 {
 public:
+	using MeshObjectVector = std::vector<SceneObject<GeometryMesh>>;
+
 	Scene() = default;
 	Scene(size_t objectsCnt);
 	~Scene() = default;
-	void AddMesh(const GeometryMesh& obj);
+	void AddMesh(const SceneObject<GeometryMesh>& obj);
 	void Clear();
 	void LoadFromFile(const char* fileName);
 	size_t VerticesCount() const;
 	size_t IndicesCount() const;
-	const std::vector<GeometryMesh>& GetMeshes();
+	const MeshObjectVector& GetMeshes();
 private:
-	std::vector<GeometryMesh> m_meshes;
+	MeshObjectVector m_meshes;
 	size_t verticesCount = 0;
 	size_t indicesCount = 0;
 };

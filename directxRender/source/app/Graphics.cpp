@@ -213,16 +213,18 @@ void Graphics::BuildGeometryBuffers()
 	std::vector<uint32_t> indices;
 	vertices.reserve(scene.VerticesCount());
 	indices.reserve(scene.IndicesCount());
-	size_t indexOffset = 0;
+	uint32_t indexOffset = 0;
 
 	for (const auto& obj : scene.GetMeshes())
 	{
-		std::copy(obj.vertices.begin(), obj.vertices.end(), std::back_inserter(vertices));
+		const auto& loadedVertices = obj.object.vertices;
+		const auto& loadedIndices = obj.object.indices;
+		std::copy(loadedVertices.begin(), loadedVertices.end(), std::back_inserter(vertices));
 		std::for_each(
-			obj.indices.begin(),
-			obj.indices.end(),
+			loadedIndices.begin(),
+			loadedIndices.end(),
 			[&indices, indexOffset](uint32_t index) { indices.emplace_back(index + indexOffset); });
-		indexOffset += obj.vertices.size();
+		indexOffset += static_cast<uint32_t>(loadedVertices.size());
 	}
 
 	D3D11_BUFFER_DESC desc = {};

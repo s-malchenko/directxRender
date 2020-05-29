@@ -161,6 +161,9 @@
     <ClInclude Include="source\exception\GfxMacros.h">
       <Filter>Source\Exception</Filter>
     </ClInclude>
+    <ClInclude Include="source\scene\SceneObject.h">
+      <Filter>Source\Scene</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="source\shaders\PixelShader.hlsl">

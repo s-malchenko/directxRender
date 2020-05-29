@@ -20,4 +20,3 @@ private:
 	float pitch = 0;
 	float speed = 1;
 };
-

@@ -9,10 +9,10 @@ Scene::Scene(size_t objectsCnt)
 	m_meshes.reserve(objectsCnt);
 }
 
-void Scene::AddMesh(const GeometryMesh& obj)
+void Scene::AddMesh(const SceneObject<GeometryMesh>& obj)
 {
-	verticesCount += obj.vertices.size();
-	indicesCount += obj.indices.size();
+	verticesCount += obj.object.vertices.size();
+	indicesCount += obj.object.indices.size();
 	m_meshes.emplace_back(obj);
 }
 
@@ -70,7 +70,7 @@ void Scene::LoadFromFile(const char* filePath)
 			}
 		}
 
-		AddMesh(mesh);
+		AddMesh({ mesh, {} });
 	}
 }
 
@@ -84,7 +84,7 @@ size_t Scene::IndicesCount() const
 	return indicesCount;
 }
 
-const std::vector<GeometryMesh>& Scene::GetMeshes()
+const Scene::MeshObjectVector& Scene::GetMeshes()
 {
 	return m_meshes;
 }
