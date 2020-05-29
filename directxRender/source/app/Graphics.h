@@ -22,7 +22,7 @@ public:
 	/**
 	 * Clear render target view with given normalized color.
 	 */
-	void ClearBuffer(float red, float green, float blue) noexcept;
+	void ClearBuffer() noexcept;
 	void HandleWindowResize();
 
 	/**

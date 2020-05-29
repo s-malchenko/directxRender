@@ -54,9 +54,9 @@ void Graphics::EndFrame()
 	}
 }
 
-void Graphics::ClearBuffer(float red, float green, float blue) noexcept
+void Graphics::ClearBuffer() noexcept
 {
-	const float color[] = { red, green, blue, 1 };
+	static const float color[] = { 0.7f, 0.7f, 0.7f, 1 };
 	context->ClearRenderTargetView(renderTargetView.Get(), color);
 	context->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1, 0);
 }

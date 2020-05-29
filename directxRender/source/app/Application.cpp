@@ -35,12 +35,9 @@ void Application::ProceedFrame()
 
 	worldTimer.Tick();
 	appTimer.Tick();
-	const auto appTime = worldTimer.GetPassedTime();
 
-	float red = static_cast<float>(std::sin(appTime) + 1) / 2;
-	float green = static_cast<float>(std::cos(appTime * 1.3f) + 1) / 2;
-	float blue = static_cast<float>(std::cos(appTime * 0.7f) + 1) / 2;
-	window.Gfx().ClearBuffer(red, green, blue);
+	window.Gfx().ClearBuffer();
+
 	HandleInputs();
 	
 	window.Gfx().UpdateScene(appTimer.Delta());
