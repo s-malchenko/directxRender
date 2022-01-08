@@ -4,7 +4,7 @@
 #include "exception/HrException.h"
 #include "controls/Keyboard.h"
 #include "controls/Mouse.h"
-#include "Graphics.h"
+#include "renderSystem/Graphics.h"
 
 #include <string>
 #include <optional>

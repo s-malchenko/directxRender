@@ -5,7 +5,7 @@
 class PerspectiveCamera
 {
 public:
-	PerspectiveCamera(float fov, float aspect, float nearPlane = 0.1, float farPlane = 500);
+	PerspectiveCamera(float fov = 1.57f);
 	void SetFov(float newFov) noexcept;
 	void SetAspect(float newAspect) noexcept;
 	void SetSpeed(float newSpeed) noexcept;
@@ -13,10 +13,10 @@ public:
 	void Move(float dx, float dy, float dz) noexcept;
 	void Turn(float dPitch, float dRoll) noexcept;
 	float GetSpeed() const noexcept;
-	DirectX::XMMATRIX GetPerspectiveViewTransform() const;
+	DirectX::XMMATRIX GetPerspectiveViewTransform(float aspect, float nearPlane = 0.1, float farPlane = 500) const;
 private:
 	DirectX::XMMATRIX worldTransform;
-	float fov, aspect, nearPlane, farPlane;
+	float fov;
 	float pitch = 0;
 	float speed = 1;
 };

@@ -33,6 +33,9 @@
     <Filter Include="Source\Utility">
       <UniqueIdentifier>{04f1fb85-4dfa-46a3-98a8-983c2d827585}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\RenderSystem">
+      <UniqueIdentifier>{6eb9d720-3fe3-454b-90b1-6605e567d3ec}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="directxRender.rc">
@@ -48,9 +51,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="source\app\Graphics.cpp">
-      <Filter>Source\Application</Filter>
-    </ClCompile>
     <ClCompile Include="source\app\Window.cpp">
       <Filter>Source\Application</Filter>
     </ClCompile>
@@ -102,11 +102,14 @@
     <ClCompile Include="source\WinMain.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="source\renderSystem\Graphics.cpp">
+      <Filter>Source\RenderSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="source\renderSystem\RenderData.cpp">
+      <Filter>Source\RenderSystem</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="source\app\Graphics.h">
-      <Filter>Source\Application</Filter>
-    </ClInclude>
     <ClInclude Include="source\app\Window.h">
       <Filter>Source\Application</Filter>
     </ClInclude>
@@ -163,6 +166,15 @@
     </ClInclude>
     <ClInclude Include="source\scene\SceneObject.h">
       <Filter>Source\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="source\renderSystem\Graphics.h">
+      <Filter>Source\RenderSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="source\renderSystem\RenderData.h">
+      <Filter>Source\RenderSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="source\renderSystem\DataSwapper.h">
+      <Filter>Source\Utility</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

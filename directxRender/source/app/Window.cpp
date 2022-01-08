@@ -314,7 +314,7 @@ void Window::HandleResize(LPARAM lParam) noexcept
 	}
 }
 
-const char * Window::Exception::GetType() const noexcept
+const char* Window::Exception::GetType() const noexcept
 {
 	return "Window Exception";
 }

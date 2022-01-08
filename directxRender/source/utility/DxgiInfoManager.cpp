@@ -1,6 +1,6 @@
 #include "DxgiInfoManager.h"
 
-#include "app/Graphics.h"
+#include "renderSystem/Graphics.h"
 #include "exception/GraphicsException.h"
 #include "exception/HrException.h"
 #include "utility/Util.h"

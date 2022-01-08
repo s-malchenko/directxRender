@@ -84,7 +84,7 @@ size_t Scene::IndicesCount() const
 	return indicesCount;
 }
 
-const Scene::MeshObjectVector& Scene::GetMeshes()
+const Scene::MeshObjectVector& Scene::GetMeshes() const
 {
 	return m_meshes;
 }

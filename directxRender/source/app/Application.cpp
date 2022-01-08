@@ -1,6 +1,8 @@
 #include "Application.h"
 
+#include "utility/DataSwapper.h"
 #include "utility/Util.h"
+
 #include <sstream>
 #include <iomanip>
 
@@ -9,10 +11,58 @@ Application::Application() : window("DX render window", 800, 500)
 	window.SetActivationHandler([this]() { this->HandleWindowInactive(); });
 }
 
+Application::~Application()
+{
+	mRunning = false;
+
+	if (mRenderThread.joinable())
+	{
+		mRenderThread.join();
+	}
+}
+
 int Application::Run()
 {
 	worldTimer.Reset();
 	appTimer.Reset();
+	mRunning = true;
+
+	mRenderData.scene.Clear();
+	mRenderData.scene.LoadFromFile("../../scenes/utah_teapot/small_teapots.obj");
+
+	std::exception_ptr renderThreadException;
+
+	mRenderThread = std::thread([this, &renderThreadException]()
+	{
+		try
+		{
+			while (mRunning)
+			{
+				const RenderData* data;
+
+				while (!(data = mRenderSwapper.TryGetDataForRead()) && mRunning)
+				{
+					Util::SleepUs(1);
+				}
+
+				if (!mRunning)
+				{
+					return;
+				}
+
+				window.Gfx().SetRenderData(data);
+				window.Gfx().ClearBuffer();
+				window.Gfx().UpdateScene();
+				window.Gfx().DrawScene();
+				window.Gfx().EndFrame();
+				mRenderSwapper.ReaderDone();
+			}
+		}
+		catch (...)
+		{
+			renderThreadException = std::current_exception();
+		}
+	});
 
 	while (true)
 	{
@@ -21,7 +71,21 @@ int Application::Run()
 			return *code;
 		}
 
+		if (renderThreadException)
+		{
+			std::rethrow_exception(renderThreadException);
+		}
+
 		ProceedFrame();
+
+		RenderData* dataToSwap;
+		while (!(dataToSwap = mRenderSwapper.TryGetDataForWrite()))
+		{
+			Util::SleepUs(1);
+		}
+
+		*dataToSwap = mRenderData;
+		mRenderSwapper.WriterDone();
 	}
 }
 
@@ -35,14 +99,7 @@ void Application::ProceedFrame()
 
 	worldTimer.Tick();
 	appTimer.Tick();
-
-	window.Gfx().ClearBuffer();
-
 	HandleInputs();
-	
-	window.Gfx().UpdateScene(appTimer.Delta());
-	window.Gfx().DrawScene();
-	window.Gfx().EndFrame();
 }
 
 void Application::HandleInputs()
@@ -99,11 +156,11 @@ void Application::HandleInputs()
 		case VK_SHIFT:
 			if (event.IsPress())
 			{
-				window.Gfx().Camera().MultiplySpeed(2);
+				mRenderData.camera.MultiplySpeed(2);
 			}
 			else
 			{
-				window.Gfx().Camera().MultiplySpeed(0.5f);
+				mRenderData.camera.MultiplySpeed(0.5f);
 			}
 			break;
 		case 'F':
@@ -137,19 +194,19 @@ void Application::HandleInputs()
 		switch (event.GetType())
 		{
 		case Mouse::Event::WheelUp:
-			window.Gfx().Camera().MultiplySpeed(speedMultiplier);
+			mRenderData.camera.MultiplySpeed(speedMultiplier);
 			break;
 		case Mouse::Event::WheelDown:
-			window.Gfx().Camera().MultiplySpeed(1 / speedMultiplier);
+			mRenderData.camera.MultiplySpeed(1 / speedMultiplier);
 			break;
 		}
 	}
 
-	window.Gfx().Camera().Move(dPos[0], dPos[1], dPos[2]);
+	mRenderData.camera.Move(dPos[0], dPos[1], dPos[2]);
 
 	if (mouse.RightPressed())
 	{
-		window.Gfx().Camera().Turn((prevCursor.y - cursor.y) / 200.0f, (cursor.x - prevCursor.x) / 200.0f);
+		mRenderData.camera.Turn((prevCursor.y - cursor.y) / 200.0f, (cursor.x - prevCursor.x) / 200.0f);
 	}
 
 	prevCursor = cursor;

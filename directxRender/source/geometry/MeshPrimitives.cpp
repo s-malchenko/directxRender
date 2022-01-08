@@ -1,7 +1,7 @@
 #include "MeshPrimitives.h"
 #include <cassert>
-#define _USE_MATH_DEFINES
-#include <math.h>
+#include <cmath>
+#include <numbers>
 
 namespace
 {
@@ -16,7 +16,7 @@ namespace
 
 		for (uint16_t i = 0; i < baseVerticesCount; ++i)
 		{
-			result.push_back(halfUnitCircleXYVertex(2 * (float)M_PI / baseVerticesCount * i));
+			result.push_back(halfUnitCircleXYVertex(2 * std::numbers::pi_v<float> / baseVerticesCount * i));
 		}
 
 		return result;

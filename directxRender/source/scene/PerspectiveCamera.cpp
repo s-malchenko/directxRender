@@ -1,11 +1,12 @@
 #include "PerspectiveCamera.h"
 
 #include <algorithm>
+#include <cmath>
 
 using namespace DirectX;
 
-PerspectiveCamera::PerspectiveCamera(float fov, float aspect, float nearPlane, float farPlane)
-	: fov(fov), aspect(aspect), nearPlane(nearPlane), farPlane(farPlane)
+PerspectiveCamera::PerspectiveCamera(float fov)
+	: fov(fov)
 {
 	worldTransform = XMMatrixTranslation(0, 0, 4);
 }
@@ -13,11 +14,6 @@ PerspectiveCamera::PerspectiveCamera(float fov, float aspect, float nearPlane, f
 void PerspectiveCamera::SetFov(float newFov) noexcept
 {
 	fov = newFov;
-}
-
-void PerspectiveCamera::SetAspect(float newAspect) noexcept
-{
-	aspect = newAspect;
 }
 
 void PerspectiveCamera::SetSpeed(float newSpeed) noexcept
@@ -57,7 +53,7 @@ float PerspectiveCamera::GetSpeed() const noexcept
 	return speed;
 }
 
-XMMATRIX PerspectiveCamera::GetPerspectiveViewTransform() const
+XMMATRIX PerspectiveCamera::GetPerspectiveViewTransform(float aspect, float nearPlane, float farPlane) const
 {
 	return worldTransform * XMMatrixPerspectiveFovLH(fov, aspect, nearPlane, farPlane);
 }

@@ -22,32 +22,32 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{67497B0D-6961-4508-BE25-09C3398EDDC5}</ProjectGuid>
     <RootNamespace>directxRender</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -164,7 +164,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\app\Application.cpp" />
-    <ClCompile Include="source\app\Graphics.cpp" />
     <ClCompile Include="source\app\Window.cpp" />
     <ClCompile Include="source\controls\Keyboard.cpp" />
     <ClCompile Include="source\controls\Mouse.cpp" />
@@ -175,6 +174,8 @@
     <ClCompile Include="source\geometry\MeshPrimitives.cpp" />
     <ClCompile Include="source\pipeline\InputLayout.cpp" />
     <ClCompile Include="source\pipeline\Technique.cpp" />
+    <ClCompile Include="source\renderSystem\Graphics.cpp" />
+    <ClCompile Include="source\renderSystem\RenderData.cpp" />
     <ClCompile Include="source\scene\PerspectiveCamera.cpp" />
     <ClCompile Include="source\scene\Scene.cpp" />
     <ClCompile Include="source\utility\DxgiInfoManager.cpp" />
@@ -184,7 +185,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\app\Application.h" />
-    <ClInclude Include="source\app\Graphics.h" />
     <ClInclude Include="source\app\Window.h" />
     <ClInclude Include="source\controls\Keyboard.h" />
     <ClInclude Include="source\controls\Mouse.h" />
@@ -196,6 +196,9 @@
     <ClInclude Include="source\geometry\MeshPrimitives.h" />
     <ClInclude Include="source\pipeline\InputLayout.h" />
     <ClInclude Include="source\pipeline\Technique.h" />
+    <ClInclude Include="source\renderSystem\Graphics.h" />
+    <ClInclude Include="source\renderSystem\RenderData.h" />
+    <ClInclude Include="source\renderSystem\DataSwapper.h" />
     <ClInclude Include="source\scene\PerspectiveCamera.h" />
     <ClInclude Include="source\scene\Scene.h" />
     <ClInclude Include="source\scene\SceneObject.h" />

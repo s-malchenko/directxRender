@@ -2,8 +2,7 @@
 
 #include "utility/EasyWin.h"
 #include "geometry/MeshPrimitives.h"
-#include "scene/PerspectiveCamera.h"
-#include "scene/Scene.h"
+#include "renderSystem/RenderData.h"
 
 #include <d3d11.h>
 #include <memory>
@@ -19,19 +18,13 @@ public:
 	Graphics& operator=(const Graphics&) = delete;
 	void EndFrame();
 
-	/**
-	 * Clear render target view with given normalized color.
-	 */
 	void ClearBuffer() noexcept;
 	void HandleWindowResize();
 
-	/**
-	 * Update scene. Param dt - time delta in seconds.
-	 */
-	void UpdateScene(float dt);
+	void UpdateScene();
+	void SetRenderData(const RenderData* newData);
 	void DrawScene();
 	void HotReload();
-	PerspectiveCamera& Camera();
 
 private:
 	Microsoft::WRL::ComPtr<ID3D11Device> device;
@@ -39,9 +32,9 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderTargetView;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> depthStencilView;
-	Scene scene;
+	const RenderData* mRenderData;
+	float mAspectRatio = 1;
 	HWND hWnd;
-	std::unique_ptr<PerspectiveCamera> pCam;
 	uint16_t width, height;
 	const uint16_t sampleCount = 4;
 	UINT msaaQuality;
@@ -51,6 +44,5 @@ private:
 	void CreateDepthStencilView();
 	void RenewSize();
 	void SetViewport();
-	void PopulateScene();
 	void BuildGeometryBuffers();
 };

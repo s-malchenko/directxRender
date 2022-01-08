@@ -17,7 +17,7 @@ public:
 	void LoadFromFile(const char* fileName);
 	size_t VerticesCount() const;
 	size_t IndicesCount() const;
-	const MeshObjectVector& GetMeshes();
+	const MeshObjectVector& GetMeshes() const;
 private:
 	MeshObjectVector m_meshes;
 	size_t verticesCount = 0;

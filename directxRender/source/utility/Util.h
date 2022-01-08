@@ -5,6 +5,7 @@
 namespace Util
 {
 	void SleepMs(size_t ms);
+	void SleepUs(size_t microseconds);
 
 	template<class T>
 	inline void Trim(std::queue<T> q, size_t maxCount)

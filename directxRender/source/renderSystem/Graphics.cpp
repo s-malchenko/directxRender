@@ -1,11 +1,14 @@
-#include "app/Graphics.h"
+#include "renderSystem/Graphics.h"
 
 #include "exception/GraphicsException.h"
 #include "pipeline/Technique.h"
 #include "utility/Util.h"
+
 #include <algorithm>
 #include <assimp/Importer.hpp>
 #include <DirectXMath.h>
+#include <iterator>
+#include <vector>
 
 #pragma comment(lib, "d3d11.lib")
 
@@ -25,14 +28,11 @@ Technique defTech = Technique({ L"VertexShader", L"PixelShader" }, { defLayoutDe
 Graphics::Graphics(HWND hWnd) : hWnd(hWnd)
 {
 	CreateDeviceAndContext();
-	pCam = std::make_unique<PerspectiveCamera>(1.57f, 1.0f);
 	RenewSize();
 	CreateSwapChain();
 	CreateRenderTargetView();
 	CreateDepthStencilView();
 	SetViewport();
-	PopulateScene();
-	BuildGeometryBuffers();
 	defTech.Load(device);
 	defTech.Bind(context);
 }
@@ -75,16 +75,6 @@ void Graphics::HandleWindowResize()
 	CreateRenderTargetView();
 	CreateDepthStencilView();
 	SetViewport();
-}
-
-PerspectiveCamera& Graphics::Camera()
-{
-	if (!pCam)
-	{
-		throw EXT_EXCEPT("Gfx Camera not initialized!");
-	}
-
-	return *pCam;
 }
 
 void Graphics::CreateDeviceAndContext()
@@ -188,7 +178,7 @@ void Graphics::RenewSize()
 	GetClientRect(hWnd, &rect);
 	width = static_cast<uint16_t>(rect.right - rect.left);
 	height = static_cast<uint16_t>(rect.bottom - rect.top);
-	Camera().SetAspect(1.0f * width / height);
+	mAspectRatio = 1.0f * width / height;
 }
 
 void Graphics::SetViewport()
@@ -201,14 +191,15 @@ void Graphics::SetViewport()
 	context->RSSetViewports(1, &vp);
 }
 
-void Graphics::PopulateScene()
-{
-	scene.Clear();
-	scene.LoadFromFile("../../scenes/utah_teapot/utah_teapot.obj");
-}
-
 void Graphics::BuildGeometryBuffers()
 {
+	const Scene& scene = mRenderData->scene;
+
+	if (scene.GetMeshes().empty())
+	{
+		return;
+	}
+
 	std::vector<Vertex> vertices;
 	std::vector<uint32_t> indices;
 	vertices.reserve(scene.VerticesCount());
@@ -252,8 +243,9 @@ void Graphics::BuildGeometryBuffers()
 	context->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 }
 
-void Graphics::UpdateScene(float dt)
+void Graphics::UpdateScene()
 {
+	BuildGeometryBuffers();
 	namespace wrl = Microsoft::WRL;
 
 	struct Color
@@ -272,7 +264,7 @@ void Graphics::UpdateScene(float dt)
 	const ConstantBuffer cb =
 	{
 		{
-			dx::XMMatrixTranspose(Camera().GetPerspectiveViewTransform())
+			dx::XMMatrixTranspose(mRenderData->camera.GetPerspectiveViewTransform(mAspectRatio))
 		}
 	};
 
@@ -311,9 +303,14 @@ void Graphics::UpdateScene(float dt)
 	context->PSSetConstantBuffers(0, 1, constantBufferColors.GetAddressOf());
 }
 
+void Graphics::SetRenderData(const RenderData* newData)
+{
+	mRenderData = newData;
+}
+
 void Graphics::DrawScene() 
 {
-	GFX_THROW_INFO_VOID(context->DrawIndexed(static_cast<unsigned int>(scene.IndicesCount()), 0, 0));
+	GFX_THROW_INFO_VOID(context->DrawIndexed(static_cast<unsigned int>(mRenderData->scene.IndicesCount()), 0, 0));
 }
 
 void Graphics::HotReload()
