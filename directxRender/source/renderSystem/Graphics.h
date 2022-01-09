@@ -44,5 +44,6 @@ private:
 	void CreateDepthStencilView();
 	void RenewSize();
 	void SetViewport();
-	void BuildGeometryBuffers();
+	void BuildGeometryBuffers(const SceneObject<GeometryMesh>& mesh);
+	void DrawMesh(const SceneObject<GeometryMesh>& mesh);
 };

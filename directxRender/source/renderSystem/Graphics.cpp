@@ -191,37 +191,16 @@ void Graphics::SetViewport()
 	context->RSSetViewports(1, &vp);
 }
 
-void Graphics::BuildGeometryBuffers()
+void Graphics::BuildGeometryBuffers(const SceneObject<GeometryMesh>& mesh)
 {
-	const Scene& scene = mRenderData->scene;
-
-	if (scene.GetMeshes().empty())
-	{
-		return;
-	}
-
-	std::vector<Vertex> vertices;
-	std::vector<uint32_t> indices;
-	vertices.reserve(scene.VerticesCount());
-	indices.reserve(scene.IndicesCount());
+	const auto& vertices = mesh.object.vertices;
+	const auto& indices = mesh.object.indices;
 	uint32_t indexOffset = 0;
-
-	for (const auto& obj : scene.GetMeshes())
-	{
-		const auto& loadedVertices = obj.object.vertices;
-		const auto& loadedIndices = obj.object.indices;
-		std::copy(loadedVertices.begin(), loadedVertices.end(), std::back_inserter(vertices));
-		std::for_each(
-			loadedIndices.begin(),
-			loadedIndices.end(),
-			[&indices, indexOffset](uint32_t index) { indices.emplace_back(index + indexOffset); });
-		indexOffset += static_cast<uint32_t>(loadedVertices.size());
-	}
 
 	D3D11_BUFFER_DESC desc = {};
 	desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	desc.Usage = D3D11_USAGE_DEFAULT;
-	desc.ByteWidth = (UINT)(sizeof(vertices[0]) * vertices.size());
+	desc.ByteWidth = static_cast<UINT>(sizeof(vertices[0]) * vertices.size());
 	desc.StructureByteStride = sizeof(vertices[0]);
 	D3D11_SUBRESOURCE_DATA sd = {};
 	sd.pSysMem = vertices.data();
@@ -245,7 +224,6 @@ void Graphics::BuildGeometryBuffers()
 
 void Graphics::UpdateScene()
 {
-	BuildGeometryBuffers();
 	namespace wrl = Microsoft::WRL;
 
 	struct Color
@@ -308,9 +286,18 @@ void Graphics::SetRenderData(const RenderData* newData)
 	mRenderData = newData;
 }
 
+void Graphics::DrawMesh(const SceneObject<GeometryMesh>& mesh)
+{
+	BuildGeometryBuffers(mesh);
+	GFX_THROW_INFO_VOID(context->DrawIndexed(static_cast<unsigned int>(mesh.object.indices.size()), 0, 0));
+}
+
 void Graphics::DrawScene() 
 {
-	GFX_THROW_INFO_VOID(context->DrawIndexed(static_cast<unsigned int>(mRenderData->scene.IndicesCount()), 0, 0));
+	for (const auto& mesh : mRenderData->scene.GetMeshes())
+	{
+		DrawMesh(mesh);
+	}
 }
 
 void Graphics::HotReload()
