@@ -61,13 +61,13 @@ void Mouse::OnWheelDelta(int delta, Position pos)
 
 	while (wheelDelta >= wheelDeltaThreshold)
 	{
-		this->PostEvent(Mouse::Event::WheelUp, pos);
+		this->PostEvent(Mouse::Event::Type::WheelUp, pos);
 		wheelDelta -= wheelDeltaThreshold;
 	}
 
 	while (wheelDelta <= -wheelDeltaThreshold)
 	{
-		this->PostEvent(Mouse::Event::WheelDown, pos);
+		this->PostEvent(Mouse::Event::Type::WheelDown, pos);
 		wheelDelta += wheelDeltaThreshold;
 	}
 }

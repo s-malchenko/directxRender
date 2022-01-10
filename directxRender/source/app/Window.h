@@ -6,10 +6,11 @@
 #include "controls/Mouse.h"
 #include "renderSystem/Graphics.h"
 
-#include <string>
+#include <functional>
+#include <glfw/glfw3.h>
 #include <optional>
 #include <memory>
-#include <functional>
+#include <string>
 
 class Window
 {
@@ -21,22 +22,7 @@ public:
 	public:
 		const char* GetType() const noexcept override;
 	};
-private:
-	// singleton for registration of window class
-	class WindowClass
-	{
-	public:
-		static const char *GetName() noexcept;
-		static HINSTANCE GetInstance() noexcept;
-	private:
-		WindowClass() noexcept;
-		~WindowClass();
-		WindowClass(const WindowClass&) = delete;
-		WindowClass& operator=(const WindowClass&) = delete;
-		static constexpr const char* name = "dx render";
-		static WindowClass windowClass;
-		HINSTANCE hInst;
-	};
+
 public:
 	Window(const char* name, int width = 640, int height = 480);
 	~Window();
@@ -44,28 +30,24 @@ public:
 	Window& operator=(const Window&) = delete;
 	void SetTitle(const std::string& title);
 	int GetWidth() const noexcept;
-	int GetHeight() const noexcept;
 	bool Active() const;
-	std::optional<int> ProcessMessages();
+	void ProcessMessages();
 	void SetActivationHandler(handler_t handler);
+	bool ShouldClose() const;
 
 	Mouse& GetMouse();
 	Keyboard& GetKeyboard();
 	Graphics& Gfx();
 
 private:
-	static LRESULT CALLBACK HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-	static LRESULT CALLBACK DeliverMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-	LRESULT CALLBACK HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-	bool PointsInside(LPARAM lParam) const noexcept;
-	void HandleResize(LPARAM lParam) noexcept;
+	void HandleResize(GLFWwindow* window, int width, int height) noexcept;
+	void SetIcon();
+	
 	Mouse mouse;
 	Keyboard keyboard;
-
-	int width;
-	int height;
 	HWND hWnd;
 	std::unique_ptr<Graphics> pGfx;
+	GLFWwindow* mGlfwWindow;
 	bool active = false;
 	std::optional<handler_t> onActiveChanged;
 };

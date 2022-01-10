@@ -64,12 +64,9 @@ int Application::Run()
 		}
 	});
 
-	while (true)
+	while (!window.ShouldClose())
 	{
-		if (const auto code = window.ProcessMessages())
-		{
-			return *code;
-		}
+		window.ProcessMessages();
 
 		if (renderThreadException)
 		{
@@ -87,6 +84,8 @@ int Application::Run()
 		*dataToSwap = mRenderData;
 		mRenderSwapper.WriterDone();
 	}
+
+	return EXIT_SUCCESS;
 }
 
 void Application::ProceedFrame()
@@ -110,8 +109,15 @@ void Application::HandleInputs()
 	std::ostringstream ss;
 	static Mouse::Position prevCursor = {};
 	auto cursor = mouse.GetPosition();
-	ss << "FPS " << 1 / deltaTime;
-	window.SetTitle(ss.str().c_str());
+	static constexpr float FPS_SHOW_PERIOD_SEC = .5f;
+	static float nextFpsShowTime = 0;
+	
+	if (appTimer.GetPassedTime() > nextFpsShowTime)
+	{
+		ss << "FPS " << 1 / deltaTime;
+		window.SetTitle(ss.str().c_str());
+		nextFpsShowTime = appTimer.GetPassedTime() + FPS_SHOW_PERIOD_SEC;
+	}
 
 	float dPos[] = { 0, 0, 0 };
 
@@ -193,10 +199,10 @@ void Application::HandleInputs()
 
 		switch (event.GetType())
 		{
-		case Mouse::Event::WheelUp:
+		case Mouse::Event::Type::WheelUp:
 			mRenderData.camera.MultiplySpeed(speedMultiplier);
 			break;
-		case Mouse::Event::WheelDown:
+		case Mouse::Event::Type::WheelDown:
 			mRenderData.camera.MultiplySpeed(1 / speedMultiplier);
 			break;
 		}

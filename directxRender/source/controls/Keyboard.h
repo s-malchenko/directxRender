@@ -11,7 +11,7 @@ public:
 	class Event
 	{
 	public:
-		enum Type
+		enum class Type
 		{
 			None,
 			Press,
