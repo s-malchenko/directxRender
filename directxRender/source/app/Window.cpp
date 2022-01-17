@@ -37,6 +37,12 @@ static void GlfwWindowFocusCallback(GLFWwindow* window, int focused)
 	myWindow->active = focused;
 }
 
+static void GlfwFramebufferSizeCallback(GLFWwindow* window, int width, int height)
+{
+	auto myWindow = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
+	myWindow->Gfx().QueryResize();
+}
+
 Window::Window(const char* name, int width, int height)
 {
 	glfwSetErrorCallback(GlfwErrorCallback);
@@ -63,6 +69,7 @@ Window::Window(const char* name, int width, int height)
 	glfwSetMouseButtonCallback(mGlfwWindow, GlfwMouseButtonCallback);
 	glfwSetScrollCallback(mGlfwWindow, GlfwScrollCallback);
 	glfwSetWindowFocusCallback(mGlfwWindow, GlfwWindowFocusCallback);
+	glfwSetFramebufferSizeCallback(mGlfwWindow, GlfwFramebufferSizeCallback);
 }
 
 Window::~Window()

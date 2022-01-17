@@ -63,11 +63,12 @@ void Graphics::ClearBuffer() noexcept
 
 void Graphics::HandleWindowResize()
 {
-	if (width == 0 || height == 0)
+	if (!mResized || width == 0 || height == 0)
 	{
 		return;
 	}
 
+	mResized = false;
 	RenewSize();
 	renderTargetView = nullptr;
 	depthStencilView = nullptr;

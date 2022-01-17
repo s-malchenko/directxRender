@@ -50,6 +50,7 @@ int Application::Run()
 					return;
 				}
 
+				window.Gfx().HandleWindowResize();
 				window.Gfx().SetRenderData(data);
 				window.Gfx().ClearBuffer();
 				window.Gfx().UpdateScene();
