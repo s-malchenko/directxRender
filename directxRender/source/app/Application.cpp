@@ -37,10 +37,9 @@ int Application::Run()
 		{
 			while (mRunning)
 			{
+				RenderSwapper::ReaderHolder dataHolder;
 
-				const RenderData* data;
-
-				while (!(data = mRenderSwapper.TryGetDataForRead()) && mRunning)
+				while (!(dataHolder = mRenderSwapper.TryGetDataForRead()) && mRunning)
 				{
 					Util::SleepUs(1);
 				}
@@ -50,13 +49,17 @@ int Application::Run()
 					return;
 				}
 
+				if (!window.Active())
+				{
+					continue;
+				}
+
 				window.Gfx().HandleWindowResize();
-				window.Gfx().SetRenderData(data);
+				window.Gfx().SetRenderData(dataHolder.GetData());
 				window.Gfx().ClearBuffer();
 				window.Gfx().UpdateScene();
 				window.Gfx().DrawScene();
 				window.Gfx().EndFrame();
-				mRenderSwapper.ReaderDone();
 			}
 		}
 		catch (...)
@@ -77,14 +80,15 @@ int Application::Run()
 
 		ProceedFrame();
 
-		RenderData* dataToSwap;
-		while (!(dataToSwap = mRenderSwapper.TryGetDataForWrite()))
 		{
-			Util::SleepUs(1);
-		}
+			RenderSwapper::WriterHolder dataHolder;
+			while (!(dataHolder = mRenderSwapper.TryGetDataForWrite()))
+			{
+				Util::SleepUs(1);
+			}
 
-		*dataToSwap = mRenderData;
-		mRenderSwapper.WriterDone();
+			*dataHolder.GetData() = mRenderData;
+		}
 	}
 
 	return EXIT_SUCCESS;
