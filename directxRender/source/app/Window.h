@@ -1,19 +1,22 @@
 #pragma once
 
-#include "utility/EasyWin.h"
 #include "exception/HrException.h"
-#include "controls/Keyboard.h"
-#include "controls/Mouse.h"
 #include "renderSystem/Graphics.h"
 
-#include <string>
+#include <atomic>
+#include <functional>
+#include <glfw/glfw3.h>
 #include <optional>
 #include <memory>
-#include <functional>
+#include <string>
+#include <queue>
 
 class Window
 {
-	using handler_t = std::function<void()>;
+	friend void GlfwScrollCallback(GLFWwindow* window, double xOffset, double yOffset);
+	friend void GlfwMouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
+	friend void GlfwKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+	friend void GlfwWindowFocusCallback(GLFWwindow* window, int focused);
 public:
 	class Exception : public HrException
 	{
@@ -21,53 +24,63 @@ public:
 	public:
 		const char* GetType() const noexcept override;
 	};
-private:
-	// singleton for registration of window class
-	class WindowClass
+
+	struct InputEvent
 	{
-	public:
-		static const char *GetName() noexcept;
-		static HINSTANCE GetInstance() noexcept;
-	private:
-		WindowClass() noexcept;
-		~WindowClass();
-		WindowClass(const WindowClass&) = delete;
-		WindowClass& operator=(const WindowClass&) = delete;
-		static constexpr const char* name = "dx render";
-		static WindowClass windowClass;
-		HINSTANCE hInst;
+		enum class Device
+		{
+			NONE,
+			KEYBOARD,
+			MOUSE,
+		};
+
+		operator bool() const
+		{
+			return mDevice != Device::NONE;
+		}
+
+		Device mDevice = Device::NONE;
+		int mKey;
+		int mAction;
 	};
+
+	struct CursorPosition
+	{
+		float x = 0;
+		float y = 0;
+	};
+
 public:
 	Window(const char* name, int width = 640, int height = 480);
 	~Window();
 	Window(const Window&) = delete;
 	Window& operator=(const Window&) = delete;
 	void SetTitle(const std::string& title);
-	int GetWidth() const noexcept;
-	int GetHeight() const noexcept;
 	bool Active() const;
-	std::optional<int> ProcessMessages();
-	void SetActivationHandler(handler_t handler);
+	void ProcessMessages();
+	bool ShouldClose() const;
 
-	Mouse& GetMouse();
-	Keyboard& GetKeyboard();
+	bool KeyPressed(int key) const;
+	bool MouseButtonPressed(int mouseButton) const;
+	float GetScrollInput() const { return mMouseScrollInput; }
+	void ResetScrollInput() { mMouseScrollInput = 0; }
+	InputEvent PopInputEvent();
+	CursorPosition GetCursorPosition() const;
+
 	Graphics& Gfx();
 
 private:
-	static LRESULT CALLBACK HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-	static LRESULT CALLBACK DeliverMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-	LRESULT CALLBACK HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-	bool PointsInside(LPARAM lParam) const noexcept;
-	void HandleResize(LPARAM lParam) noexcept;
-	Mouse mouse;
-	Keyboard keyboard;
+	void HandleResize(GLFWwindow* window, int width, int height) noexcept;
+	void SetIcon();
+	void AddScrollInput(double yOffset) { mMouseScrollInput += static_cast<float>(yOffset); }
+	void PushInputEvent(InputEvent event);
 
-	int width;
-	int height;
 	HWND hWnd;
 	std::unique_ptr<Graphics> pGfx;
-	bool active = false;
-	std::optional<handler_t> onActiveChanged;
+	GLFWwindow* mGlfwWindow;
+	std::atomic_bool active = true;
+	float mMouseScrollInput = 0;
+	std::queue<InputEvent> mInputEvents;
 };
 
 //macro for capturing file and line to exception

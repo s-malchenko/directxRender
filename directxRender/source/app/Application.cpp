@@ -8,7 +8,6 @@
 
 Application::Application() : window("DX render window", 800, 500)
 {
-	window.SetActivationHandler([this]() { this->HandleWindowInactive(); });
 }
 
 Application::~Application()
@@ -38,9 +37,9 @@ int Application::Run()
 		{
 			while (mRunning)
 			{
-				const RenderData* data;
+				RenderSwapper::ReaderHolder dataHolder;
 
-				while (!(data = mRenderSwapper.TryGetDataForRead()) && mRunning)
+				while (!(dataHolder = mRenderSwapper.TryGetDataForRead()) && mRunning)
 				{
 					Util::SleepUs(1);
 				}
@@ -50,12 +49,17 @@ int Application::Run()
 					return;
 				}
 
-				window.Gfx().SetRenderData(data);
+				if (!window.Active())
+				{
+					continue;
+				}
+
+				window.Gfx().HandleWindowResize();
+				window.Gfx().SetRenderData(dataHolder.GetData());
 				window.Gfx().ClearBuffer();
 				window.Gfx().UpdateScene();
 				window.Gfx().DrawScene();
 				window.Gfx().EndFrame();
-				mRenderSwapper.ReaderDone();
 			}
 		}
 		catch (...)
@@ -64,12 +68,10 @@ int Application::Run()
 		}
 	});
 
-	while (true)
+	while (!window.ShouldClose())
 	{
-		if (const auto code = window.ProcessMessages())
-		{
-			return *code;
-		}
+		HandleWindowInactive();
+		window.ProcessMessages();
 
 		if (renderThreadException)
 		{
@@ -78,15 +80,18 @@ int Application::Run()
 
 		ProceedFrame();
 
-		RenderData* dataToSwap;
-		while (!(dataToSwap = mRenderSwapper.TryGetDataForWrite()))
 		{
-			Util::SleepUs(1);
-		}
+			RenderSwapper::WriterHolder dataHolder;
+			while (!(dataHolder = mRenderSwapper.TryGetDataForWrite()))
+			{
+				Util::SleepUs(1);
+			}
 
-		*dataToSwap = mRenderData;
-		mRenderSwapper.WriterDone();
+			*dataHolder.GetData() = mRenderData;
+		}
 	}
+
+	return EXIT_SUCCESS;
 }
 
 void Application::ProceedFrame()
@@ -105,106 +110,106 @@ void Application::ProceedFrame()
 void Application::HandleInputs()
 {
 	const auto deltaTime = appTimer.Delta();
-	auto& mouse = window.GetMouse();
-	auto& keyboard = window.GetKeyboard();
 	std::ostringstream ss;
-	static Mouse::Position prevCursor = {};
-	auto cursor = mouse.GetPosition();
-	ss << "FPS " << 1 / deltaTime;
-	window.SetTitle(ss.str().c_str());
+	static constexpr float FPS_SHOW_PERIOD_SEC = .5f;
+	static float nextFpsShowTime = 0;
+	
+	if (appTimer.GetPassedTime() > nextFpsShowTime)
+	{
+		ss << "FPS " << 1 / deltaTime;
+		window.SetTitle(ss.str().c_str());
+		nextFpsShowTime = appTimer.GetPassedTime() + FPS_SHOW_PERIOD_SEC;
+	}
 
 	float dPos[] = { 0, 0, 0 };
 
-	if (keyboard.KeyPressed('W'))
+	if (window.KeyPressed(GLFW_KEY_W))
 	{
 		dPos[0] = deltaTime;
 	}
-	else if (keyboard.KeyPressed('S'))
+	else if (window.KeyPressed(GLFW_KEY_S))
 	{
 		dPos[0] = -deltaTime;
 	}
 
-	if (keyboard.KeyPressed('D'))
+	if (window.KeyPressed(GLFW_KEY_D))
 	{
 		dPos[1] = deltaTime;
 	}
-	else if (keyboard.KeyPressed('A'))
+	else if (window.KeyPressed(GLFW_KEY_A))
 	{
 		dPos[1] = -deltaTime;
 	}
 
-	if (keyboard.KeyPressed(' '))
+	if (window.KeyPressed(GLFW_KEY_SPACE))
 	{
 		dPos[2] = deltaTime;
 	}
-	else if (keyboard.KeyPressed('C'))
+	else if (window.KeyPressed(GLFW_KEY_C))
 	{
 		dPos[2] = -deltaTime;
 	}
-
-	while (!keyboard.KeyEmpty())
+	
+	while (auto event = window.PopInputEvent())
 	{
-		auto event = keyboard.ReadKey();
-
-		if (!event)
+		switch (event.mDevice)
 		{
-			continue;
-		}
-
-		switch (event.Code())
-		{
-		case VK_SHIFT:
-			if (event.IsPress())
+		case Window::InputEvent::Device::KEYBOARD:
+			switch (event.mKey)
 			{
-				mRenderData.camera.MultiplySpeed(2);
-			}
-			else
-			{
-				mRenderData.camera.MultiplySpeed(0.5f);
+			case GLFW_KEY_LEFT_SHIFT:
+				if (event.mAction == GLFW_PRESS)
+				{
+					mRenderData.camera.MultiplySpeed(2);
+				}
+				else if (event.mAction == GLFW_RELEASE)
+				{
+					mRenderData.camera.MultiplySpeed(0.5f);
+				}
+				break;
+			case GLFW_KEY_F:
+				if (event.mAction == GLFW_PRESS)
+				{
+					if (worldTimer.Paused())
+					{
+						worldTimer.Continue();
+					}
+					else
+					{
+						worldTimer.Pause();
+					}
+				}
+				break;
+			case GLFW_KEY_Q:
+				if (event.mAction == GLFW_PRESS)
+				{
+					window.Gfx().HotReload();
+				}
+				break;
+			default:
+				break;
 			}
 			break;
-		case 'F':
-			if(event.IsPress())
-			{
-				if (worldTimer.Paused())
-				{
-					worldTimer.Continue();
-				}
-				else
-				{
-					worldTimer.Pause();
-				}
-			}
-			break;
-		case 'Q':
-			if (event.IsPress())
-			{
-				window.Gfx().HotReload();
-			}
+		default:
 			break;
 		}
 	}
 
 	static constexpr float speedMultiplier = 1.2f;
+	const float scrollInput = window.GetScrollInput();
 
-	while (!mouse.Empty())
+	if (scrollInput != 0)
 	{
-		auto event = mouse.Read();
-
-		switch (event.GetType())
-		{
-		case Mouse::Event::WheelUp:
-			mRenderData.camera.MultiplySpeed(speedMultiplier);
-			break;
-		case Mouse::Event::WheelDown:
-			mRenderData.camera.MultiplySpeed(1 / speedMultiplier);
-			break;
-		}
+		mRenderData.camera.MultiplySpeed(std::pow(speedMultiplier, scrollInput));
+		window.ResetScrollInput();
 	}
 
 	mRenderData.camera.Move(dPos[0], dPos[1], dPos[2]);
 
-	if (mouse.RightPressed())
+	static Window::CursorPosition prevCursor = {};
+	auto cursor = window.GetCursorPosition();
+
+	if (window.MouseButtonPressed(GLFW_MOUSE_BUTTON_RIGHT))
 	{
 		mRenderData.camera.Turn((prevCursor.y - cursor.y) / 200.0f, (cursor.x - prevCursor.x) / 200.0f);
 	}

@@ -25,6 +25,7 @@ public:
 	void SetRenderData(const RenderData* newData);
 	void DrawScene();
 	void HotReload();
+	void QueryResize() { mResized = true; }
 
 private:
 	Microsoft::WRL::ComPtr<ID3D11Device> device;
@@ -38,6 +39,8 @@ private:
 	uint16_t width, height;
 	const uint16_t sampleCount = 4;
 	UINT msaaQuality;
+	std::atomic_bool mResized = false;
+
 	void CreateDeviceAndContext();
 	void CreateSwapChain();
 	void CreateRenderTargetView();

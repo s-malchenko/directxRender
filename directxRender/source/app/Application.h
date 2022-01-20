@@ -23,7 +23,9 @@ private:
 	Timer worldTimer;
 	Timer appTimer;
 	RenderData mRenderData;
-	DataSwapper<RenderData> mRenderSwapper;
+
+	using RenderSwapper = DataSwapper<RenderData>;
+	RenderSwapper mRenderSwapper;
 	std::atomic_bool mRunning = false;
 	std::thread mRenderThread;
 };

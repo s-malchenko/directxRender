@@ -63,12 +63,19 @@ void Graphics::ClearBuffer() noexcept
 
 void Graphics::HandleWindowResize()
 {
+	if (!mResized)
+	{
+		return;
+	}
+
+	mResized = false;
+	RenewSize();
+
 	if (width == 0 || height == 0)
 	{
 		return;
 	}
 
-	RenewSize();
 	renderTargetView = nullptr;
 	depthStencilView = nullptr;
 	GFX_THROW_INFO(swapChain->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0));
@@ -178,7 +185,11 @@ void Graphics::RenewSize()
 	GetClientRect(hWnd, &rect);
 	width = static_cast<uint16_t>(rect.right - rect.left);
 	height = static_cast<uint16_t>(rect.bottom - rect.top);
-	mAspectRatio = 1.0f * width / height;
+	
+	if (width != 0 && height != 0)
+	{
+		mAspectRatio = 1.0f * width / height;
+	}
 }
 
 void Graphics::SetViewport()
