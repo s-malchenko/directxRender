@@ -11,6 +11,11 @@ PerspectiveCamera::PerspectiveCamera(float fov)
 	worldTransform = XMMatrixTranslation(0, 0, 4);
 }
 
+void PerspectiveCamera::Reset()
+{
+	*this = PerspectiveCamera();
+}
+
 void PerspectiveCamera::SetFov(float newFov) noexcept
 {
 	fov = newFov;

@@ -18,6 +18,7 @@ public:
 private:
 	void ProceedFrame();
 	void HandleInputs();
+	void HandleUI();
 	void HandleWindowInactive();
 	Window window;
 	Timer worldTimer;

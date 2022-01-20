@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <assimp/Importer.hpp>
 #include <DirectXMath.h>
+#include <imgui/backends/imgui_impl_dx11.h>
 #include <iterator>
 #include <vector>
 
@@ -35,6 +36,17 @@ Graphics::Graphics(HWND hWnd) : hWnd(hWnd)
 	SetViewport();
 	defTech.Load(device);
 	defTech.Bind(context);
+	ImGui_ImplDX11_Init(device.Get(), context.Get());
+}
+
+Graphics::~Graphics()
+{
+	ImGui_ImplDX11_Shutdown();
+}
+
+void Graphics::NewFrameUI()
+{
+	ImGui_ImplDX11_NewFrame();
 }
 
 void Graphics::EndFrame()
@@ -52,6 +64,11 @@ void Graphics::EndFrame()
 
 		throw GFX_EXCEPT(hr);
 	}
+}
+
+std::lock_guard<std::mutex> Graphics::AcquireUILock()
+{
+	return std::lock_guard(mUImutex);
 }
 
 void Graphics::ClearBuffer() noexcept
@@ -308,6 +325,15 @@ void Graphics::DrawScene()
 	for (const auto& mesh : mRenderData->scene.GetMeshes())
 	{
 		DrawMesh(mesh);
+	}
+}
+
+void Graphics::DrawUI()
+{
+	auto lock = AcquireUILock();
+	if (ImDrawData* drawData = ImGui::GetDrawData())
+	{
+		ImGui_ImplDX11_RenderDrawData(drawData);
 	}
 }
 

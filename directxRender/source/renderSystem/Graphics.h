@@ -6,6 +6,7 @@
 
 #include <d3d11.h>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <vector>
 #include <wrl.h>
@@ -15,8 +16,11 @@ class Graphics
 public:
 	Graphics(HWND hWnd);
 	Graphics(const Graphics&) = delete;
+	~Graphics();
 	Graphics& operator=(const Graphics&) = delete;
+	void NewFrameUI();
 	void EndFrame();
+	std::lock_guard<std::mutex> AcquireUILock();
 
 	void ClearBuffer() noexcept;
 	void HandleWindowResize();
@@ -24,6 +28,7 @@ public:
 	void UpdateScene();
 	void SetRenderData(const RenderData* newData);
 	void DrawScene();
+	void DrawUI();
 	void HotReload();
 	void QueryResize() { mResized = true; }
 
@@ -40,6 +45,7 @@ private:
 	const uint16_t sampleCount = 4;
 	UINT msaaQuality;
 	std::atomic_bool mResized = false;
+	std::mutex mUImutex;
 
 	void CreateDeviceAndContext();
 	void CreateSwapChain();

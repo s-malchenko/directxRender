@@ -59,6 +59,8 @@ public:
 	bool Active() const;
 	void ProcessMessages();
 	bool ShouldClose() const;
+	void NewFrameUI();
+	void EndFrameUI();
 
 	bool KeyPressed(int key) const;
 	bool MouseButtonPressed(int mouseButton) const;

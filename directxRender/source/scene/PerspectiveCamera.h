@@ -6,8 +6,8 @@ class PerspectiveCamera
 {
 public:
 	PerspectiveCamera(float fov = 1.57f);
+	void Reset();
 	void SetFov(float newFov) noexcept;
-	void SetAspect(float newAspect) noexcept;
 	void SetSpeed(float newSpeed) noexcept;
 	void MultiplySpeed(float speedMul) noexcept;
 	void Move(float dx, float dy, float dz) noexcept;

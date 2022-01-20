@@ -1,6 +1,8 @@
 #include "Window.h"
 
 #include "../../resource.h"
+#include <imgui/backends/imgui_impl_glfw.h>
+#include <imgui/imgui.h>
 #include <sstream>
 
 #define GLFW_EXPOSE_NATIVE_WIN32
@@ -60,6 +62,10 @@ Window::Window(const char* name, int width, int height)
 		throw std::runtime_error("GLFW window creation failed");
 	}
 
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGui::StyleColorsDark();
+
 	hWnd = glfwGetWin32Window(mGlfwWindow);
 	pGfx = std::make_unique<Graphics>(this->hWnd);
 
@@ -70,12 +76,21 @@ Window::Window(const char* name, int width, int height)
 	glfwSetScrollCallback(mGlfwWindow, GlfwScrollCallback);
 	glfwSetWindowFocusCallback(mGlfwWindow, GlfwWindowFocusCallback);
 	glfwSetFramebufferSizeCallback(mGlfwWindow, GlfwFramebufferSizeCallback);
+
+	ImGui_ImplGlfw_InitForOther(mGlfwWindow, true); // set ImGui callbacks automatically, callbacks set by user will be called inside ImGui callbacks
 }
 
 Window::~Window()
 {
+	if (pGfx)
+	{
+		pGfx.reset();
+	}
+
 	if (mGlfwWindow)
 	{
+		ImGui_ImplGlfw_Shutdown();
+		ImGui::DestroyContext();
 		glfwDestroyWindow(mGlfwWindow);
 	}
 
@@ -148,6 +163,18 @@ void Window::HandleResize(GLFWwindow* window, int width, int height) noexcept
 	{
 		Gfx().HandleWindowResize();
 	}
+}
+
+void Window::NewFrameUI()
+{
+	Gfx().NewFrameUI();
+	ImGui_ImplGlfw_NewFrame();
+	ImGui::NewFrame();
+}
+
+void Window::EndFrameUI()
+{
+	ImGui::Render();
 }
 
 void Window::SetIcon()

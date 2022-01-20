@@ -3,8 +3,9 @@
 #include "utility/DataSwapper.h"
 #include "utility/Util.h"
 
-#include <sstream>
+#include <imgui/imgui.h>
 #include <iomanip>
+#include <sstream>
 
 Application::Application() : window("DX render window", 800, 500)
 {
@@ -59,6 +60,7 @@ int Application::Run()
 				window.Gfx().ClearBuffer();
 				window.Gfx().UpdateScene();
 				window.Gfx().DrawScene();
+				window.Gfx().DrawUI();
 				window.Gfx().EndFrame();
 			}
 		}
@@ -104,6 +106,7 @@ void Application::ProceedFrame()
 
 	worldTimer.Tick();
 	appTimer.Tick();
+	HandleUI();
 	HandleInputs();
 }
 
@@ -215,6 +218,23 @@ void Application::HandleInputs()
 	}
 
 	prevCursor = cursor;
+}
+
+void Application::HandleUI()
+{
+	auto lock = window.Gfx().AcquireUILock();
+	window.NewFrameUI();
+
+	ImGui::Begin("ImGui Window");
+	ImGui::Text("Press the button to reset camera position and speed");
+
+	if (ImGui::Button("Reset camera"))
+	{
+		mRenderData.camera.Reset();
+	}
+
+	ImGui::End();
+	window.EndFrameUI();
 }
 
 void Application::HandleWindowInactive()
