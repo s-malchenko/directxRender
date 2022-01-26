@@ -1,6 +1,5 @@
 #include "Application.h"
 
-#include "utility/DataSwapper.h"
 #include "utility/Util.h"
 
 #include <imgui/imgui.h>
@@ -14,11 +13,6 @@ Application::Application() : window("DX render window", 800, 500)
 Application::~Application()
 {
 	mRunning = false;
-
-	if (mRenderThread.joinable())
-	{
-		mRenderThread.join();
-	}
 }
 
 int Application::Run()
@@ -30,67 +24,13 @@ int Application::Run()
 	mRenderData.scene.Clear();
 	mRenderData.scene.LoadFromFile("../../scenes/utah_teapot/small_teapots.obj");
 
-	std::exception_ptr renderThreadException;
-
-	mRenderThread = std::thread([this, &renderThreadException]()
-	{
-		try
-		{
-			while (mRunning)
-			{
-				RenderSwapper::ReaderHolder dataHolder;
-
-				while (!(dataHolder = mRenderSwapper.TryGetDataForRead()) && mRunning)
-				{
-					Util::SleepUs(1);
-				}
-
-				if (!mRunning)
-				{
-					return;
-				}
-
-				if (!window.Active())
-				{
-					continue;
-				}
-
-				window.Gfx().HandleWindowResize();
-				window.Gfx().SetRenderData(dataHolder.GetData());
-				window.Gfx().ClearBuffer();
-				window.Gfx().UpdateScene();
-				window.Gfx().DrawScene();
-				window.Gfx().DrawUI();
-				window.Gfx().EndFrame();
-			}
-		}
-		catch (...)
-		{
-			renderThreadException = std::current_exception();
-		}
-	});
+	window.Gfx().SetRenderData(&mRenderData);
 
 	while (!window.ShouldClose())
 	{
 		HandleWindowInactive();
 		window.ProcessMessages();
-
-		if (renderThreadException)
-		{
-			std::rethrow_exception(renderThreadException);
-		}
-
 		ProceedFrame();
-
-		{
-			RenderSwapper::WriterHolder dataHolder;
-			while (!(dataHolder = mRenderSwapper.TryGetDataForWrite()))
-			{
-				Util::SleepUs(1);
-			}
-
-			*dataHolder.GetData() = mRenderData;
-		}
 	}
 
 	return EXIT_SUCCESS;
@@ -108,6 +48,17 @@ void Application::ProceedFrame()
 	appTimer.Tick();
 	HandleUI();
 	HandleInputs();
+	RenderFrame();
+}
+
+void Application::RenderFrame()
+{
+	window.Gfx().HandleWindowResize();
+	window.Gfx().ClearBuffer();
+	window.Gfx().UpdateScene();
+	window.Gfx().DrawScene();
+	window.Gfx().DrawUI();
+	window.Gfx().EndFrame();
 }
 
 void Application::HandleInputs()
@@ -222,7 +173,6 @@ void Application::HandleInputs()
 
 void Application::HandleUI()
 {
-	auto lock = window.Gfx().AcquireUILock();
 	window.NewFrameUI();
 
 	ImGui::Begin("ImGui Window");

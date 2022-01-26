@@ -3,8 +3,6 @@
 #include "exception/HrException.h"
 #include "renderSystem/Graphics.h"
 
-#include <atomic>
-#include <functional>
 #include <glfw/glfw3.h>
 #include <optional>
 #include <memory>
@@ -80,7 +78,7 @@ private:
 	HWND hWnd;
 	std::unique_ptr<Graphics> pGfx;
 	GLFWwindow* mGlfwWindow;
-	std::atomic_bool active = true;
+	bool active = true;
 	float mMouseScrollInput = 0;
 	std::queue<InputEvent> mInputEvents;
 };

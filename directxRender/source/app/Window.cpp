@@ -1,6 +1,8 @@
 #include "Window.h"
 
 #include "../../resource.h"
+#include "utility/Util.h"
+
 #include <imgui/backends/imgui_impl_glfw.h>
 #include <imgui/imgui.h>
 #include <sstream>
@@ -229,11 +231,7 @@ void Window::PushInputEvent(InputEvent event)
 {
 	static constexpr int MAX_INPUT_EVENTS = 16;
 	mInputEvents.push(event);
-
-	while (mInputEvents.size() > MAX_INPUT_EVENTS)
-	{
-		mInputEvents.pop();
-	}
+	Util::Trim(mInputEvents, MAX_INPUT_EVENTS);
 }
 
 const char* Window::Exception::GetType() const noexcept

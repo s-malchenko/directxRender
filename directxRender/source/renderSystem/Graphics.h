@@ -1,12 +1,11 @@
 #pragma once
 
 #include "utility/EasyWin.h"
-#include "geometry/MeshPrimitives.h"
+#include "scene/MeshPrimitives.h"
 #include "renderSystem/RenderData.h"
 
 #include <d3d11.h>
 #include <memory>
-#include <mutex>
 #include <string>
 #include <vector>
 #include <wrl.h>
@@ -20,7 +19,6 @@ public:
 	Graphics& operator=(const Graphics&) = delete;
 	void NewFrameUI();
 	void EndFrame();
-	std::lock_guard<std::mutex> AcquireUILock();
 
 	void ClearBuffer() noexcept;
 	void HandleWindowResize();
@@ -30,7 +28,7 @@ public:
 	void DrawScene();
 	void DrawUI();
 	void HotReload();
-	void QueryResize() { mResized = true; }
+	void QueryResize() { mResizeNeeded = true; }
 
 private:
 	Microsoft::WRL::ComPtr<ID3D11Device> device;
@@ -44,8 +42,7 @@ private:
 	uint16_t width, height;
 	const uint16_t sampleCount = 4;
 	UINT msaaQuality;
-	std::atomic_bool mResized = false;
-	std::mutex mUImutex;
+	bool mResizeNeeded = false;
 
 	void CreateDeviceAndContext();
 	void CreateSwapChain();

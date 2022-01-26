@@ -12,9 +12,6 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Source\Geometry">
-      <UniqueIdentifier>{4bcd41a6-8f23-4604-b3f3-7ed5f909bb6b}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source\Exception">
       <UniqueIdentifier>{d14425aa-ccfa-4762-b30e-9a4ddee8d579}</UniqueIdentifier>
     </Filter>
@@ -66,12 +63,6 @@
     <ClCompile Include="source\exception\HrException.cpp">
       <Filter>Source\Exception</Filter>
     </ClCompile>
-    <ClCompile Include="source\geometry\GeometryMesh.cpp">
-      <Filter>Source\Geometry</Filter>
-    </ClCompile>
-    <ClCompile Include="source\geometry\MeshPrimitives.cpp">
-      <Filter>Source\Geometry</Filter>
-    </ClCompile>
     <ClCompile Include="source\pipeline\InputLayout.cpp">
       <Filter>Source\Pipeline</Filter>
     </ClCompile>
@@ -120,6 +111,12 @@
     <ClCompile Include="..\imgui\imgui_widgets.cpp">
       <Filter>Source\ImGui</Filter>
     </ClCompile>
+    <ClCompile Include="source\scene\GeometryMesh.cpp">
+      <Filter>Source\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="source\scene\MeshPrimitives.cpp">
+      <Filter>Source\Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\app\Window.h">
@@ -136,12 +133,6 @@
     </ClInclude>
     <ClInclude Include="source\exception\HrException.h">
       <Filter>Source\Exception</Filter>
-    </ClInclude>
-    <ClInclude Include="source\geometry\GeometryMesh.h">
-      <Filter>Source\Geometry</Filter>
-    </ClInclude>
-    <ClInclude Include="source\geometry\MeshPrimitives.h">
-      <Filter>Source\Geometry</Filter>
     </ClInclude>
     <ClInclude Include="source\pipeline\InputLayout.h">
       <Filter>Source\Pipeline</Filter>
@@ -179,8 +170,11 @@
     <ClInclude Include="source\renderSystem\RenderData.h">
       <Filter>Source\RenderSystem</Filter>
     </ClInclude>
-    <ClInclude Include="source\renderSystem\DataSwapper.h">
-      <Filter>Source\Utility</Filter>
+    <ClInclude Include="source\scene\MeshPrimitives.h">
+      <Filter>Source\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="source\scene\GeometryMesh.h">
+      <Filter>Source\Scene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -2,7 +2,7 @@
 
 #include <DirectXMath.h>
 #include <vector>
-#include "geometry/MeshPrimitives.h"
+#include "scene/MeshPrimitives.h"
 
 struct Vertex
 {

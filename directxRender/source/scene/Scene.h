@@ -1,6 +1,6 @@
 #pragma once
 
-#include "geometry/GeometryMesh.h"
+#include "scene/GeometryMesh.h"
 #include "scene/SceneObject.h"
 #include <vector>
 

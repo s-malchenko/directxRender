@@ -66,11 +66,6 @@ void Graphics::EndFrame()
 	}
 }
 
-std::lock_guard<std::mutex> Graphics::AcquireUILock()
-{
-	return std::lock_guard(mUImutex);
-}
-
 void Graphics::ClearBuffer() noexcept
 {
 	static const float color[] = { 0.7f, 0.7f, 0.7f, 1 };
@@ -80,12 +75,12 @@ void Graphics::ClearBuffer() noexcept
 
 void Graphics::HandleWindowResize()
 {
-	if (!mResized)
+	if (!mResizeNeeded)
 	{
 		return;
 	}
 
-	mResized = false;
+	mResizeNeeded = false;
 	RenewSize();
 
 	if (width == 0 || height == 0)
@@ -330,7 +325,6 @@ void Graphics::DrawScene()
 
 void Graphics::DrawUI()
 {
-	auto lock = AcquireUILock();
 	if (ImDrawData* drawData = ImGui::GetDrawData())
 	{
 		ImGui_ImplDX11_RenderDrawData(drawData);
