@@ -1,8 +1,11 @@
 #pragma once
 
+#include "scene/MeshPrimitives.h"
+
+#include "renderSystem/EasyD3D11.h"
 #include <DirectXMath.h>
 #include <vector>
-#include "scene/MeshPrimitives.h"
+#include <wrl.h>
 
 struct Vertex
 {
@@ -12,11 +15,22 @@ struct Vertex
 	DirectX::XMFLOAT4 color;
 };
 
-struct GeometryMesh
+class GeometryMesh
 {
-	std::vector<Vertex> vertices;
-	std::vector<uint32_t> indices;
-
+public:
 	GeometryMesh() = default;
+	GeometryMesh(const GeometryMesh&) = default;
 	GeometryMesh(const MeshPrimitive& mesh);
+
+	void Initialize(ID3D11Device* device);
+	bool IsInitialized() const;
+	void SetBuffers(ID3D11DeviceContext* context);
+	unsigned int GetIndexCount() const;
+
+	std::vector<Vertex> mVertices;
+	std::vector<unsigned int> mIndices;
+private:
+
+	Microsoft::WRL::ComPtr<ID3D11Buffer> mVertexBuffer;
+	Microsoft::WRL::ComPtr<ID3D11Buffer> mIndexBuffer;
 };

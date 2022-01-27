@@ -1,7 +1,7 @@
 #pragma once
 
 #include "pipeline/InputLayout.h"
-#include <d3d11.h>
+#include "renderSystem/EasyD3D11.h"
 #include <wrl.h>
 #include <string>
 

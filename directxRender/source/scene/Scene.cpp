@@ -11,16 +11,12 @@ Scene::Scene(size_t objectsCnt)
 
 void Scene::AddMesh(const SceneObject<GeometryMesh>& obj)
 {
-	verticesCount += obj.object.vertices.size();
-	indicesCount += obj.object.indices.size();
 	m_meshes.emplace_back(obj);
 }
 
 void Scene::Clear()
 {
 	m_meshes.clear();
-	verticesCount = 0;
-	indicesCount = 0;
 }
 
 void Scene::LoadFromFile(const char* filePath)
@@ -51,22 +47,22 @@ void Scene::LoadFromFile(const char* filePath)
 				v.normal = { normal.x, normal.y, normal.z };
 			}
 
-			mesh.vertices.push_back(v);
+			mesh.mVertices.push_back(v);
 		}
 
 		for (size_t j = 0; j < loadedMesh->mNumFaces; ++j)
 		{
 			const auto face = loadedMesh->mFaces[j];
 			ASSERT(face.mNumIndices == 3 || face.mNumIndices == 4, "Unsupported faces in mesh");
-			mesh.indices.push_back(face.mIndices[0]);
-			mesh.indices.push_back(face.mIndices[1]);
-			mesh.indices.push_back(face.mIndices[2]);
+			mesh.mIndices.push_back(face.mIndices[0]);
+			mesh.mIndices.push_back(face.mIndices[1]);
+			mesh.mIndices.push_back(face.mIndices[2]);
 
 			if (face.mNumIndices == 4)
 			{
-				mesh.indices.push_back(face.mIndices[2]);
-				mesh.indices.push_back(face.mIndices[3]);
-				mesh.indices.push_back(face.mIndices[0]);
+				mesh.mIndices.push_back(face.mIndices[2]);
+				mesh.mIndices.push_back(face.mIndices[3]);
+				mesh.mIndices.push_back(face.mIndices[0]);
 			}
 		}
 
@@ -74,17 +70,12 @@ void Scene::LoadFromFile(const char* filePath)
 	}
 }
 
-size_t Scene::VerticesCount() const
-{
-	return verticesCount;
-}
-
-size_t Scene::IndicesCount() const
-{
-	return indicesCount;
-}
-
 const Scene::MeshObjectVector& Scene::GetMeshes() const
+{
+	return m_meshes;
+}
+
+Scene::MeshObjectVector& Scene::GetMeshes()
 {
 	return m_meshes;
 }

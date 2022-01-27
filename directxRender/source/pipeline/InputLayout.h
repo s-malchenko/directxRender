@@ -1,6 +1,6 @@
 #pragma once
 
-#include <d3d11.h>
+#include "renderSystem/EasyD3D11.h"
 #include <string>
 #include <vector>
 

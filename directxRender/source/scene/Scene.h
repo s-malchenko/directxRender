@@ -15,12 +15,9 @@ public:
 	void AddMesh(const SceneObject<GeometryMesh>& obj);
 	void Clear();
 	void LoadFromFile(const char* fileName);
-	size_t VerticesCount() const;
-	size_t IndicesCount() const;
 	const MeshObjectVector& GetMeshes() const;
+	MeshObjectVector& GetMeshes();
 private:
 	MeshObjectVector m_meshes;
-	size_t verticesCount = 0;
-	size_t indicesCount = 0;
 };
 

@@ -214,37 +214,6 @@ void Graphics::SetViewport()
 	context->RSSetViewports(1, &vp);
 }
 
-void Graphics::BuildGeometryBuffers(const SceneObject<GeometryMesh>& mesh)
-{
-	const auto& vertices = mesh.object.vertices;
-	const auto& indices = mesh.object.indices;
-	uint32_t indexOffset = 0;
-
-	D3D11_BUFFER_DESC desc = {};
-	desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	desc.Usage = D3D11_USAGE_DEFAULT;
-	desc.ByteWidth = static_cast<UINT>(sizeof(vertices[0]) * vertices.size());
-	desc.StructureByteStride = sizeof(vertices[0]);
-	D3D11_SUBRESOURCE_DATA sd = {};
-	sd.pSysMem = vertices.data();
-	wrl::ComPtr<ID3D11Buffer> vertexBuffer;
-	GFX_THROW_INFO(device->CreateBuffer(&desc, &sd, &vertexBuffer));
-	const UINT stride = sizeof(vertices[0]);
-	const UINT offset = 0;
-	context->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
-
-	D3D11_BUFFER_DESC idesc = {};
-	idesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	idesc.Usage = D3D11_USAGE_DEFAULT;
-	idesc.ByteWidth = (UINT)(sizeof(indices[0]) * indices.size());
-	idesc.StructureByteStride = sizeof(indices[0]);
-	D3D11_SUBRESOURCE_DATA isd = {};
-	isd.pSysMem = indices.data();
-	wrl::ComPtr<ID3D11Buffer> indexBuffer;
-	GFX_THROW_INFO(device->CreateBuffer(&idesc, &isd, &indexBuffer));
-	context->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
-}
-
 void Graphics::UpdateScene()
 {
 	namespace wrl = Microsoft::WRL;
@@ -304,20 +273,25 @@ void Graphics::UpdateScene()
 	context->PSSetConstantBuffers(0, 1, constantBufferColors.GetAddressOf());
 }
 
-void Graphics::SetRenderData(const RenderData* newData)
+void Graphics::SetRenderData(RenderData* newData)
 {
 	mRenderData = newData;
 }
 
-void Graphics::DrawMesh(const SceneObject<GeometryMesh>& mesh)
+void Graphics::DrawMesh(SceneObject<GeometryMesh>& mesh)
 {
-	BuildGeometryBuffers(mesh);
-	GFX_THROW_INFO_VOID(context->DrawIndexed(static_cast<unsigned int>(mesh.object.indices.size()), 0, 0));
+	if (!mesh.object.IsInitialized())
+	{
+		mesh.object.Initialize(device.Get());
+	}
+
+	mesh.object.SetBuffers(context.Get());
+	GFX_THROW_INFO_VOID(context->DrawIndexed(mesh.object.GetIndexCount(), 0, 0));
 }
 
 void Graphics::DrawScene() 
 {
-	for (const auto& mesh : mRenderData->scene.GetMeshes())
+	for (auto& mesh : mRenderData->scene.GetMeshes())
 	{
 		DrawMesh(mesh);
 	}

@@ -196,6 +196,7 @@
     <ClInclude Include="source\exception\HrException.h" />
     <ClInclude Include="source\pipeline\InputLayout.h" />
     <ClInclude Include="source\pipeline\Technique.h" />
+    <ClInclude Include="source\renderSystem\EasyD3D11.h" />
     <ClInclude Include="source\renderSystem\Graphics.h" />
     <ClInclude Include="source\renderSystem\RenderData.h" />
     <ClInclude Include="source\scene\GeometryMesh.h" />

@@ -1,10 +1,9 @@
 #pragma once
 
 #include "utility/EasyWin.h"
-#include "scene/MeshPrimitives.h"
 #include "renderSystem/RenderData.h"
 
-#include <d3d11.h>
+#include "renderSystem/EasyD3D11.h"
 #include <memory>
 #include <string>
 #include <vector>
@@ -24,7 +23,7 @@ public:
 	void HandleWindowResize();
 
 	void UpdateScene();
-	void SetRenderData(const RenderData* newData);
+	void SetRenderData(RenderData* newData);
 	void DrawScene();
 	void DrawUI();
 	void HotReload();
@@ -36,7 +35,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderTargetView;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> depthStencilView;
-	const RenderData* mRenderData;
+	RenderData* mRenderData;
 	float mAspectRatio = 1;
 	HWND hWnd;
 	uint16_t width, height;
@@ -50,6 +49,5 @@ private:
 	void CreateDepthStencilView();
 	void RenewSize();
 	void SetViewport();
-	void BuildGeometryBuffers(const SceneObject<GeometryMesh>& mesh);
-	void DrawMesh(const SceneObject<GeometryMesh>& mesh);
+	void DrawMesh(SceneObject<GeometryMesh>& mesh);
 };

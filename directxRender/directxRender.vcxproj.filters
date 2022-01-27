@@ -176,6 +176,9 @@
     <ClInclude Include="source\scene\GeometryMesh.h">
       <Filter>Source\Scene</Filter>
     </ClInclude>
+    <ClInclude Include="source\renderSystem\EasyD3D11.h">
+      <Filter>Source\RenderSystem</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="source\shaders\PixelShader.hlsl">
