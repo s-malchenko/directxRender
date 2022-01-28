@@ -2,6 +2,7 @@
 
 #include "utility/Util.h"
 
+#include <cstdlib>
 #include <imgui/imgui.h>
 #include <iomanip>
 #include <sstream>
@@ -181,6 +182,56 @@ void Application::HandleUI()
 	if (ImGui::Button("Reset camera"))
 	{
 		mRenderData.camera.Reset();
+	}
+
+	ImGui::NewLine();
+
+	const auto& curTech = window.Gfx().GetCurrentTechniqueName();
+	std::string selectedTech = curTech;
+	ImGui::Text("Current technique:");
+
+	if (ImGui::BeginCombo("select technique", selectedTech.c_str()))
+	{
+		for (const auto tech : window.Gfx().GetAvailableTechniques())
+		{
+			bool selected = selectedTech == tech;
+			if (ImGui::Selectable(tech.c_str(), &selected))
+			{
+				selectedTech = tech;
+			}
+
+			if (selected)
+			{
+				ImGui::SetItemDefaultFocus();
+			}
+		}
+
+		ImGui::EndCombo();
+	}
+
+	if (curTech != selectedTech)
+	{
+		window.Gfx().SetTechnique(selectedTech);
+	}
+
+	if (window.Gfx().GetCurrentTechniqueName() == "color")
+	{
+		if (ImGui::Button("Randomize vertex colors"))
+		{
+			const auto randomFloat = [](){ return static_cast<float>(std::rand()) / RAND_MAX; };
+
+			for (auto& object : mRenderData.scene.GetMeshes())
+			{
+				auto& mesh = object.object;
+
+				for (auto& vertex : mesh.mVertices)
+				{
+					vertex.color = {randomFloat(), randomFloat(), randomFloat(), 1};
+				}
+
+				mesh.ClearBuffers();
+			}
+		}
 	}
 
 	ImGui::End();

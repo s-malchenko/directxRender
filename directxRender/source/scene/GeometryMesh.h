@@ -22,9 +22,10 @@ public:
 	GeometryMesh(const GeometryMesh&) = default;
 	GeometryMesh(const MeshPrimitive& mesh);
 
-	void Initialize(ID3D11Device* device);
+	void InitializeBuffers(Microsoft::WRL::ComPtr<ID3D11Device> device);
 	bool IsInitialized() const;
-	void SetBuffers(ID3D11DeviceContext* context);
+	void ClearBuffers();
+	void SetBuffers(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context);
 	unsigned int GetIndexCount() const;
 
 	std::vector<Vertex> mVertices;

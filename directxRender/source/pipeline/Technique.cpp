@@ -8,14 +8,15 @@
 namespace
 {
 	const std::wstring k_shaderNamePrefix = L"../../directxRender/source/shaders/";
-	const std::wstring k_shaderSourceExtension = L".hlsl";
 	const std::wstring k_shaderCompiledExtension = L".cso";
+	const std::wstring k_psExtension = L".ps";
+	const std::wstring k_vsExtension = L".vs";
 }
 
 namespace wrl = Microsoft::WRL;
 
-Technique::Technique(ShaderNames shaders, const InputLayout& layout)
-	: names(shaders)
+Technique::Technique(const std::string& name, const InputLayout& layout)
+	: mName(name)
 	, inputLayoutDesc(layout)
 {
 }
@@ -23,8 +24,9 @@ Technique::Technique(ShaderNames shaders, const InputLayout& layout)
 void Technique::Load(Microsoft::WRL::ComPtr<ID3D11Device> device)
 {
 	wrl::ComPtr<ID3DBlob> blob;
-	const auto psFile = names.pixelShader + k_shaderCompiledExtension;
-	const auto vsFile = names.vertexShader + k_shaderCompiledExtension;
+	const auto name = std::wstring(mName.begin(), mName.end());
+	const std::wstring psFile = name + k_psExtension + k_shaderCompiledExtension;
+	const std::wstring vsFile = name + k_vsExtension + k_shaderCompiledExtension;
 	GFX_THROW_INFO(D3DReadFileToBlob(psFile.data(), &blob));
 	GFX_THROW_INFO(device->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, &pShader));
 	GFX_THROW_INFO(D3DReadFileToBlob(vsFile.data(), &blob));
@@ -83,8 +85,9 @@ HRESULT CompileShader(LPCWSTR srcFile, LPCSTR entryPoint, LPCSTR profile, ID3DBl
 void Technique::Rebuild(Microsoft::WRL::ComPtr<ID3D11Device> device)
 {
 	wrl::ComPtr<ID3DBlob> blob;
-	const auto psFile = k_shaderNamePrefix + names.pixelShader + k_shaderSourceExtension;
-	const auto vsFile = k_shaderNamePrefix + names.vertexShader + k_shaderSourceExtension;
+	const auto name = std::wstring(mName.begin(), mName.end());
+	const std::wstring psFile = k_shaderNamePrefix + name + k_psExtension;
+	const std::wstring vsFile = k_shaderNamePrefix + name + k_vsExtension;
 	GFX_THROW_INFO(CompileShader(psFile.data(), "main", "ps_5_0", &blob));
 	GFX_THROW_INFO(device->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, &pShader));
 	GFX_THROW_INFO(CompileShader(vsFile.data(), "main", "vs_5_0", &blob));

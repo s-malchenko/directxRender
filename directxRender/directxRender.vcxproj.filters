@@ -117,6 +117,9 @@
     <ClCompile Include="source\scene\MeshPrimitives.cpp">
       <Filter>Source\Scene</Filter>
     </ClCompile>
+    <ClCompile Include="source\pipeline\TechniqueFactory.cpp">
+      <Filter>Source\Pipeline</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\app\Window.h">
@@ -179,12 +182,21 @@
     <ClInclude Include="source\renderSystem\EasyD3D11.h">
       <Filter>Source\RenderSystem</Filter>
     </ClInclude>
+    <ClInclude Include="source\pipeline\TechniqueFactory.h">
+      <Filter>Source\Pipeline</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="source\shaders\PixelShader.hlsl">
+    <FxCompile Include="source\shaders\normal.ps">
       <Filter>Source\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="source\shaders\VertexShader.hlsl">
+    <FxCompile Include="source\shaders\normal.vs">
+      <Filter>Source\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="source\shaders\color.ps">
+      <Filter>Source\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="source\shaders\color.vs">
       <Filter>Source\Shaders</Filter>
     </FxCompile>
   </ItemGroup>

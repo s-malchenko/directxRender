@@ -8,21 +8,17 @@
 class Technique
 {
 public:
-	struct ShaderNames
-	{
-		std::wstring vertexShader;
-		std::wstring pixelShader;
-	};
 
-	Technique(ShaderNames shaders, const InputLayout& layout);
+	Technique(const std::string& name, const InputLayout& layout);
 	void Load(Microsoft::WRL::ComPtr<ID3D11Device> device);
 	void Rebuild(Microsoft::WRL::ComPtr<ID3D11Device> device);
 	void Bind(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context) const;
+	const std::string& GetName() const { return mName; }
 private:
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> pShader;
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> vShader;
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
-	ShaderNames names;
 	InputLayout inputLayoutDesc;
+	const std::string mName;
 };
 

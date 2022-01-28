@@ -19,7 +19,7 @@ GeometryMesh::GeometryMesh(const MeshPrimitive& mesh)
 	}
 }
 
-void GeometryMesh::Initialize(ID3D11Device* device)
+void GeometryMesh::InitializeBuffers(Microsoft::WRL::ComPtr<ID3D11Device> device)
 {
 	D3D11_BUFFER_DESC desc = {};
 	desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
@@ -45,7 +45,13 @@ bool GeometryMesh::IsInitialized() const
 	return mVertexBuffer && mIndexBuffer;
 }
 
-void GeometryMesh::SetBuffers(ID3D11DeviceContext* context)
+void GeometryMesh::ClearBuffers()
+{
+	mVertexBuffer.Reset();
+	mIndexBuffer.Reset();
+}
+
+void GeometryMesh::SetBuffers(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context)
 {
 	const UINT stride = sizeof(mVertices[0]);
 	const UINT offset = 0;

@@ -1,7 +1,7 @@
 #include "renderSystem/Graphics.h"
 
 #include "exception/GraphicsException.h"
-#include "pipeline/Technique.h"
+#include "pipeline/TechniqueFactory.h"
 #include "utility/Util.h"
 
 #include <algorithm>
@@ -16,16 +16,6 @@
 namespace wrl = Microsoft::WRL;
 namespace dx = DirectX;
 
-const D3D11_INPUT_ELEMENT_DESC defLayoutDesc[] =
-{
-	{ "Position", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	{ "Normal", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	{ "Texcoord", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	{ "Color", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-};
-
-Technique defTech = Technique({ L"VertexShader", L"PixelShader" }, { defLayoutDesc, std::size(defLayoutDesc) });
-
 Graphics::Graphics(HWND hWnd) : hWnd(hWnd)
 {
 	CreateDeviceAndContext();
@@ -34,8 +24,9 @@ Graphics::Graphics(HWND hWnd) : hWnd(hWnd)
 	CreateRenderTargetView();
 	CreateDepthStencilView();
 	SetViewport();
-	defTech.Load(device);
-	defTech.Bind(context);
+	mCurrentTechnique.emplace(TechniqueFactory::CreateDefaultTechnique());
+	mCurrentTechnique->Load(device);
+	mCurrentTechnique->Bind(context);
 	ImGui_ImplDX11_Init(device.Get(), context.Get());
 }
 
@@ -282,7 +273,7 @@ void Graphics::DrawMesh(SceneObject<GeometryMesh>& mesh)
 {
 	if (!mesh.object.IsInitialized())
 	{
-		mesh.object.Initialize(device.Get());
+		mesh.object.InitializeBuffers(device.Get());
 	}
 
 	mesh.object.SetBuffers(context.Get());
@@ -307,6 +298,35 @@ void Graphics::DrawUI()
 
 void Graphics::HotReload()
 {
-	defTech.Rebuild(device);
-	defTech.Bind(context);
+	mCurrentTechnique->Rebuild(device);
+	mCurrentTechnique->Bind(context);
+}
+
+const std::string& Graphics::GetCurrentTechniqueName() const
+{
+	static const std::string none("none");
+
+	if (!mCurrentTechnique)
+	{
+		return none;
+	}
+
+	return mCurrentTechnique->GetName();
+}
+
+const std::vector<std::string>& Graphics::GetAvailableTechniques() const
+{
+	return TechniqueFactory::GetAvailableTechniques();
+}
+
+void Graphics::SetTechnique(const std::string& name)
+{
+	if (mCurrentTechnique->GetName() == name)
+	{
+		return;
+	}
+
+	mCurrentTechnique.emplace(TechniqueFactory::CreateTechnique(name));
+	mCurrentTechnique->Load(device);
+	mCurrentTechnique->Bind(context);
 }
