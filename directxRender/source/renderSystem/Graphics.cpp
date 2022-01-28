@@ -269,7 +269,7 @@ void Graphics::SetRenderData(RenderData* newData)
 	mRenderData = newData;
 }
 
-void Graphics::DrawMesh(SceneObject<GeometryMesh>& mesh)
+void Graphics::DrawMesh(SceneObject<Scene::MeshWithMaterial>& mesh)
 {
 	if (!mesh.object.IsInitialized())
 	{

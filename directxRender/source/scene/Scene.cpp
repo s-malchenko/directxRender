@@ -2,31 +2,55 @@
 
 #include "exception/ExtendedException.h"
 #include <assimp/Importer.hpp>
+#include <assimp/postprocess.h>
 #include <assimp/scene.h>
+#include <assimp/texture.h>
 
 Scene::Scene(size_t objectsCnt)
 {
-	m_meshes.reserve(objectsCnt);
+	mMeshes.reserve(objectsCnt);
 }
 
-void Scene::AddMesh(const SceneObject<GeometryMesh>& obj)
+void Scene::AddMesh(const GeometryMesh& obj, uint32_t materialIndex)
 {
-	m_meshes.emplace_back(obj);
+	mMeshes.emplace_back(MeshWithMaterial(obj, this, materialIndex), DirectX::XMMATRIX());
+}
+
+void Scene::AddMaterial(const Material& material)
+{
+	mMaterials.emplace_back(material);
 }
 
 void Scene::Clear()
 {
-	m_meshes.clear();
+	mMeshes.clear();
 }
 
 void Scene::LoadFromFile(const char* filePath)
 {
 	Assimp::Importer importer;
-	const aiScene* scene = importer.ReadFile(filePath, 0);
+	const aiScene* scene =
+		importer.ReadFile(filePath, aiProcess_GenSmoothNormals | aiProcess_JoinIdenticalVertices);
 
 	if (!scene)
 	{
 		return;
+	}
+
+	for (size_t i = 0; i < scene->mNumMaterials; ++i)
+	{
+		const auto* loadedMaterial = scene->mMaterials[i];
+
+		if (loadedMaterial->GetTextureCount(aiTextureType_DIFFUSE) > 0)
+		{
+			aiString path;
+
+			loadedMaterial->GetTexture(
+				aiTextureType_DIFFUSE,
+				0,
+				&path);
+			path.C_Str();
+		}
 	}
 
 	for (size_t i = 0; i < scene->mNumMeshes; ++i)
@@ -45,6 +69,11 @@ void Scene::LoadFromFile(const char* filePath)
 			{
 				const auto normal = loadedMesh->mNormals[j];
 				v.normal = { normal.x, normal.y, normal.z };
+			}
+
+			if (loadedMesh->HasTextureCoords(0))
+			{
+				v.texcoord = { loadedMesh->mTextureCoords[0]->x, loadedMesh->mTextureCoords[0]->y };
 			}
 
 			mesh.mVertices.push_back(v);
@@ -66,16 +95,26 @@ void Scene::LoadFromFile(const char* filePath)
 			}
 		}
 
-		AddMesh({ mesh, {} });
+		AddMesh(mesh, loadedMesh->mMaterialIndex);
 	}
-}
-
-const Scene::MeshObjectVector& Scene::GetMeshes() const
-{
-	return m_meshes;
 }
 
 Scene::MeshObjectVector& Scene::GetMeshes()
 {
-	return m_meshes;
+	return mMeshes;
+}
+
+std::vector<Material>& Scene::GetMaterials()
+{
+	return mMaterials;
+}
+
+Scene::MeshWithMaterial::MeshWithMaterial(const GeometryMesh& mesh, Scene* parent, uint32_t materialIndex)
+	: GeometryMesh(mesh), mParentScene(parent), mMaterialIndex(materialIndex)
+{
+}
+
+Material& Scene::MeshWithMaterial::GetMaterial()
+{
+	return mParentScene->GetMaterials()[mMaterialIndex];
 }

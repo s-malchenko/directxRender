@@ -120,6 +120,9 @@
     <ClCompile Include="source\pipeline\TechniqueFactory.cpp">
       <Filter>Source\Pipeline</Filter>
     </ClCompile>
+    <ClCompile Include="source\scene\Material.cpp">
+      <Filter>Source\Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\app\Window.h">
@@ -184,6 +187,9 @@
     </ClInclude>
     <ClInclude Include="source\pipeline\TechniqueFactory.h">
       <Filter>Source\Pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="source\scene\Material.h">
+      <Filter>Source\Scene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

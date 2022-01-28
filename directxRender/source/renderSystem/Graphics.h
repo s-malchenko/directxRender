@@ -57,5 +57,5 @@ private:
 	void CreateDepthStencilView();
 	void RenewSize();
 	void SetViewport();
-	void DrawMesh(SceneObject<GeometryMesh>& mesh);
+	void DrawMesh(SceneObject<Scene::MeshWithMaterial>& mesh);
 };

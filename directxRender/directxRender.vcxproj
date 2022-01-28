@@ -210,6 +210,7 @@
     <ClCompile Include="source\renderSystem\Graphics.cpp" />
     <ClCompile Include="source\renderSystem\RenderData.cpp" />
     <ClCompile Include="source\scene\GeometryMesh.cpp" />
+    <ClCompile Include="source\scene\Material.cpp" />
     <ClCompile Include="source\scene\MeshPrimitives.cpp" />
     <ClCompile Include="source\scene\PerspectiveCamera.cpp" />
     <ClCompile Include="source\scene\Scene.cpp" />
@@ -232,6 +233,7 @@
     <ClInclude Include="source\renderSystem\Graphics.h" />
     <ClInclude Include="source\renderSystem\RenderData.h" />
     <ClInclude Include="source\scene\GeometryMesh.h" />
+    <ClInclude Include="source\scene\Material.h" />
     <ClInclude Include="source\scene\MeshPrimitives.h" />
     <ClInclude Include="source\scene\PerspectiveCamera.h" />
     <ClInclude Include="source\scene\Scene.h" />
