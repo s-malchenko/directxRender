@@ -48,4 +48,6 @@ const char* DeviceRemovedException::GetType() const noexcept
 	return "DeviceRemoved Exception";
 }
 
+#ifndef NDEBUG
 DxgiInfoManager GraphicsException::infoManager;
+#endif
